@@ -1,5 +1,5 @@
 import subprocess
-import platform
+# import platform
 import re
 
 def ping_test():
