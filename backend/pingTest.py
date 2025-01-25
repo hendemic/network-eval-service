@@ -8,10 +8,7 @@ def ping_test():
     interval = "0.1"  # Seconds (decimal values supported)
 
     # Determine OS and set appropriate ping command
-    if platform.system().lower() == "windows":
-        command = ["ping", "-n", str(count), "-w", "1000", target]
-    else:  # Linux/Mac
-        command = ["ping", "-c", str(count), "-i", interval, "-W", "1", target]
+    command = ["ping", "-c", str(count), "-i", interval, "-W", "1", target]
 
     latencies = []
     lost_packets = 0
