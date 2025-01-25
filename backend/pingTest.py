@@ -7,7 +7,7 @@ def ping_test():
     count = 100
     interval = "0.1"  # Seconds (decimal values supported)
 
-    # Determine OS and set appropriate ping command
+    # Send pings
     command = ["ping", "-c", str(count), "-i", interval, "-W", "1", target]
 
     latencies = []
