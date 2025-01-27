@@ -45,8 +45,7 @@ def ping_test():
         # Calculate jitter (average of absolute differences between consecutive packets)
         jitter = 0
         if len(latencies) > 1:
-            differences = [abs(latencies[i] - latencies[i-1]) for i in range(1, len(latencies))]
-            jitter = sum(differences) / len(differences)
+            jitter = sum(abs(latencies[i] - latencies[i-1]) for i in range(1, len(latencies))) / (len(latencies) - 1)
     else:
         min_latency = max_latency = avg_latency = jitter = 0
 
