@@ -1,0 +1,13 @@
+[Unit]
+Description=Network Test Service
+After=network.target postgresql.service
+
+[Service]
+User=root
+WorkingDirectory=/home/hendemic/Documents/Projects/network-evaluation-service
+Environment="PATH=/home/hendemic/Documents/Projects/network-evaluation-service/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/hendemic/Documents/Projects/network-evaluation-service/venv/bin/python /home/hendemic/Documents/Projects/network-evaluation-service/backend/run_test.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

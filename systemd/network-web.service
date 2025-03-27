@@ -1,0 +1,15 @@
+[Unit]
+Description=Network Evaluation Web Service
+After=network.target postgresql.service
+
+[Service]
+User=root
+WorkingDirectory=/home/hendemic/Documents/Projects/network-evaluation-service
+Environment="PATH=/home/hendemic/Documents/Projects/network-evaluation-service/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="FLASK_APP=backend.app"
+Environment="FLASK_CONFIG=production"
+ExecStart=/home/hendemic/Documents/Projects/network-evaluation-service/venv/bin/python -m flask run --host=0.0.0.0 --port=5000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

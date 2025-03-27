@@ -1,0 +1,11 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+Flask-Migrate==4.0.5
+Flask-CORS==4.0.0
+APScheduler==3.10.4
+click==8.1.7
+pytz==2023.3
+Werkzeug==2.3.7
+markupsafe==2.1.5

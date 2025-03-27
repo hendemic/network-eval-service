@@ -1,12 +1,10 @@
 import subprocess
 # import platform
 import re
+import datetime
+from typing import Dict, List, Optional, Union, Tuple
 
-def ping_test():
-    target = "1.1.1.1"
-    count = 100
-    interval = "0.1"  # Seconds (decimal values supported)
-
+def ping_test(target: str = "1.1.1.1", count: int = 100, interval: str = "0.1") -> Dict[str, Union[float, str, datetime.datetime]]:
     # Send pings
     command = ["ping", "-c", str(count), "-i", interval, "-W", "1", target]
 
@@ -29,7 +27,7 @@ def ping_test():
                 latencies.append(float(match.group(1)))
     except KeyboardInterrupt:
         print("\nTest aborted by user")
-        return
+        return {}
 
     # Calculate statistics
     total_packets = count
@@ -60,6 +58,19 @@ def ping_test():
         print(f"Jitter = {jitter:.2f}ms")
     else:
         print("No packets received")
+    
+    # Return results as dictionary for database storage
+    return {
+        "timestamp": datetime.datetime.now(),
+        "target": target,
+        "packet_loss": packet_loss,
+        "min_latency": min_latency,
+        "max_latency": max_latency,
+        "avg_latency": avg_latency,
+        "jitter": jitter,
+        "packets_sent": total_packets,
+        "packets_received": received_packets
+    }
 
 if __name__ == "__main__":
     ping_test()

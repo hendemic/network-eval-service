@@ -1,0 +1,11 @@
+[Unit]
+Description=Run network test every minute
+After=network.target postgresql.service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
