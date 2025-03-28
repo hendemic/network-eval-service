@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose configuration for Network Evaluation Service
 
 services:
   db:
@@ -26,6 +26,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-netmon}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-netmon}
@@ -37,6 +39,41 @@ services:
       - SECRET_KEY=${SECRET_KEY:-change_this_in_production}
     restart: unless-stopped
 
+  # Database initialization service - runs once to set up tables
+  db-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-netmon}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-netmon}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-network_tests}
+      - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
+    command: >
+      python -c "
+      import sys
+      from backend.models import db, PingResult
+      from backend.app import create_app
+      try:
+          app = create_app()
+          with app.app_context():
+              print('Creating database tables...')
+              db.create_all()
+              print(f'Created tables: {db.engine.table_names()}')
+              print('Database initialization successful!')
+              if PingResult.query.count() == 0:
+                  print('Warning: No data in PingResult table. Test container will populate it.')
+      except Exception as e:
+          print(f'Database initialization error: {str(e)}', file=sys.stderr)
+          sys.exit(1)
+      "
+    restart: "no"
+
   test:
     build:
       context: .
@@ -44,6 +81,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-netmon}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-netmon}

@@ -91,11 +91,24 @@ The dashboard shows:
 
 ## Troubleshooting
 
-If you encounter issues:
+If you encounter issues, you can use the included debug script:
+
+```bash
+cd /opt/network-evaluation-service
+./docker-debug.sh
+```
+
+This script will:
+- Show the status of all containers
+- Display environment variables
+- Show logs from all containers
+- Test database connectivity
+- Check for database tables
+
+You can also troubleshoot manually:
 
 1. Check container status:
    ```bash
-   cd /opt/network-evaluation-service
    docker compose ps
    ```
 
@@ -108,20 +121,21 @@ If you encounter issues:
    docker compose logs web
    docker compose logs test
    docker compose logs db
-   
-   # Follow logs in real-time
-   docker compose logs -f
+   docker compose logs db-init
    ```
 
-3. Check if Docker services are running:
+3. Check database initialization:
    ```bash
-   systemctl status docker
-   systemctl status network-evaluation  # The systemd service created during installation
+   # Connect to the PostgreSQL database
+   docker compose exec db psql -U netmon -d network_tests
+   
+   # Inside PostgreSQL, check the schema and tables
+   \dn  -- List schemas
+   \dt network_eval.*  -- List tables in the network_eval schema
    ```
 
 4. Restart Docker containers:
    ```bash
-   cd /opt/network-evaluation-service
    docker compose down
    docker compose up -d
    ```

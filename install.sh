@@ -143,7 +143,9 @@ success "Docker containers started successfully"
 # 6. Check if containers are running
 progress "Checking container status..."
 RUNNING_CONTAINERS=$(docker compose ps --services --filter "status=running" | wc -l)
-if [ "$RUNNING_CONTAINERS" -eq 3 ]; then
+# We expect at least 3 containers: db, web, test
+# The db-init container will exit after successful completion
+if [ "$RUNNING_CONTAINERS" -ge 3 ]; then
   success "All containers are running"
 else
   echo -e "${RED}Some containers failed to start. Please check:${NC}"
