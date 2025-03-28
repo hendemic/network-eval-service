@@ -4,12 +4,13 @@
 - Run ping test: `python backend/pingTest.py`
 - Install dependencies: `pip install -r requirements.txt` (create this file for dependencies)
 - Create venv: `python -m venv venv && source venv/bin/activate`
+- The project is hosted at: `https://github.com/hendemic/network-eval-service`
 
 ## Code Style Guidelines
 - **Formatting**: Follow PEP 8 standards for Python code
 - **Imports**: Group standard library imports first, then third-party, then local
 - **Typing**: Add type hints to function parameters and return values
-- **Naming**: 
+- **Naming**:
   - snake_case for variables and functions
   - CamelCase for classes
   - UPPER_CASE for constants

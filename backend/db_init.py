@@ -13,7 +13,7 @@ def init_db():
     
     # Initialize extensions
     db.init_app(app)
-    migrate = Migrate(app, db)
+    migrate_manager = Migrate(app, db)
     
     with app.app_context():
         # Create database if it doesn't exist
