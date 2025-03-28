@@ -226,7 +226,13 @@ export POSTGRES_DB=$DB_NAME
 export POSTGRES_SCHEMA=network_eval
 source venv/bin/activate
 
-# Run database initialization
+# Setup database and schema first
+progress "Setting up database and schema..."
+python backend/db_utils.py
+success "Database and schema setup complete"
+
+# Create tables using SQLAlchemy directly
+progress "Creating database tables..."
 python backend/db_init.py
 success "Database initialized"
 

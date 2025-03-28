@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.schema import MetaData
-from config import config
+from backend.config import config
 
 # Create a custom MetaData object with the schema name
 metadata = MetaData(schema=config['default'].POSTGRES_SCHEMA)
