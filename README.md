@@ -20,8 +20,9 @@ A complete monitoring solution that runs network tests, stores results in a Post
 ## Prerequisites
 
 - Any Linux system (Debian, Ubuntu, RHEL, or Proxmox LXC containers)
-- Docker and Docker Compose installed
-- Internet access for pulling container images
+- Internet access for downloading dependencies and container images
+
+The installer will automatically check for Docker and Docker Compose and install them if needed.
 
 ## Installation
 
