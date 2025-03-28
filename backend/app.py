@@ -4,9 +4,9 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 import os
 
-from models import db, PingResult
-from config import config
-from pingTest import ping_test
+from backend.models import db, PingResult
+from backend.config import config
+from backend.pingTest import ping_test
 
 def create_app(config_name='default'):
     app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
