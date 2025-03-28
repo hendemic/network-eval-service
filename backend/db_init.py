@@ -2,9 +2,13 @@ from flask import Flask
 from flask_migrate import Migrate, init, migrate, upgrade
 import os
 import subprocess
+import sys
 
-from models import db
-from config import config
+# Add parent directory to path so imports work correctly
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from backend.models import db
+from backend.config import config
 
 def init_db():
     # Create a minimal Flask app
