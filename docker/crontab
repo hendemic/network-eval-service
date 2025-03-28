@@ -1,0 +1,2 @@
+* * * * * cd /app && python -m backend.run_test >> /var/log/cron.log 2>&1
+# Empty line

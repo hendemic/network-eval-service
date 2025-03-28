@@ -1,38 +1,34 @@
 # Network Evaluation Service
 
-A complete monitoring solution that runs network tests in a Debian LXC environment, stores results in a PostgreSQL database, and visualizes performance metrics over time using Vue.js and D3.js.
+A complete monitoring solution that runs network tests, stores results in a PostgreSQL database, and visualizes performance metrics over time using Vue.js and D3.js.
 
 ## Features
 
 - Automated ping tests to measure network latency, jitter, and packet loss
-- Tests run every minute using systemd timers
+- Tests run every minute
 - Results stored in PostgreSQL database
 - Web dashboard with real-time visualization using Vue.js and D3.js
 - Historical data analysis with flexible time ranges
+- Docker-based deployment for easy installation and management
 
 ## Project Structure
 
 - `/backend`: Python Flask backend API and test scripts
 - `/frontend`: Vue.js frontend application with D3.js visualizations
-- `/systemd`: Service and timer definitions for scheduled execution
+- `/docker`: Docker configuration files
 
 ## Prerequisites
 
-- Debian-based LXC container
-- Python 3.8+ with pip
-- Node.js 16+ and npm
-- PostgreSQL 12+
+- Any Linux system (Debian, Ubuntu, RHEL, or Proxmox LXC containers)
+- Docker and Docker Compose installed
+- Internet access for pulling container images
 
-## Installation Options
-
-### Automated Installation (Recommended)
-
-The project includes an automated installation script that will set up everything in your LXC container:
+## Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/hendemic/network-eval-service.git
-cd network-eval-service
+cd network-evaluation-service
 
 # Make the install script executable
 chmod +x install.sh
@@ -41,108 +37,36 @@ chmod +x install.sh
 sudo ./install.sh
 ```
 
-### Proxmox LXC Installation
+The installer will:
+1. Install Docker if it's not already installed
+2. Clone the repository (or update it if it already exists)
+3. Configure environment variables
+4. Build and start Docker containers
+5. Create a systemd service for automatic startup
 
-1. **Create a Debian LXC Container in Proxmox**:
-   - From the Proxmox web interface, create a new LXC container
-   - Use Debian 11 (Bullseye) or newer
-   - Allocate at least 1GB RAM and 2 CPU cores
-   - Set network configuration as needed (DHCP or static IP)
-   - Start the container after creation
+The installer will prompt you to choose between production (stable) or development (latest) branches.
 
-2. **Install Using the Script**:
-   - Connect to your container: `pct enter CONTAINER_ID`
-   - Install git: `apt update && apt install -y git`
-   - Clone the repository: `git clone https://github.com/hendemic/network-eval-service.git`
-   - Run the installer:
-     ```bash
-     cd network-eval-service
-     chmod +x install.sh
-     ./install.sh
-     ```
+## Docker Containers
 
-3. **Access the Dashboard**:
-   - The web interface will be available at `http://CONTAINER_IP:5000`
-   - If needed, set up port forwarding in Proxmox to expose the service
+The application runs in three Docker containers:
 
-### Manual Installation
+1. **Web Container** - Flask backend with Vue.js frontend
+2. **Test Container** - Runs ping tests on a schedule using cron
+3. **Database Container** - PostgreSQL database to store test results
 
-For detailed step-by-step manual installation, follow these steps:
+## Configuration
 
-#### 1. Database Setup
+Configuration is done through environment variables in the `.env` file. Important settings include:
 
-```bash
-# Install PostgreSQL if not already installed
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# Create database and user
-sudo -u postgres psql
-postgres=# CREATE DATABASE network_tests;
-postgres=# CREATE USER netmon WITH PASSWORD 'your_password';
-postgres=# GRANT ALL PRIVILEGES ON DATABASE network_tests TO netmon;
-postgres=# \q
-
-# Set environment variables for database connection
-export POSTGRES_USER=netmon
-export POSTGRES_PASSWORD=your_password
-export POSTGRES_DB=network_tests
-```
-
-#### 2. Backend Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/network-evaluation-service.git
-cd network-evaluation-service
-
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Initialize the database
-python backend/db_init.py
-
-# Test the ping script
-python backend/pingTest.py
-```
-
-#### 3. Frontend Setup
-
-```bash
-# Install frontend dependencies
-cd frontend
-npm install
-
-# Build for production
-npm run build
-```
-
-#### 4. Systemd Service Setup
-
-```bash
-# Copy service files to systemd
-sudo cp systemd/* /etc/systemd/system/
-
-# Make the run_test.py script executable
-chmod +x backend/run_test.py
-
-# Reload systemd configurations
-sudo systemctl daemon-reload
-
-# Enable and start services
-sudo systemctl enable network-test.timer
-sudo systemctl start network-test.timer
-sudo systemctl enable network-web.service
-sudo systemctl start network-web.service
-```
+- `POSTGRES_USER`, `POSTGRES_PASSWORD` - Database credentials
+- `WEB_PORT` - The port to expose the web interface (default: 5000)
+- `TEST_TARGET` - IP address or hostname to ping (default: 1.1.1.1)
+- `TEST_COUNT` - Number of pings per test (default: 100)
+- `TEST_INTERVAL` - Interval between pings in seconds (default: 0.1)
 
 ## Upgrading
 
-To upgrade to a newer version:
+To upgrade to a new version:
 
 ```bash
 # Go to the project directory
@@ -151,88 +75,54 @@ cd /opt/network-evaluation-service  # or wherever you installed it
 # Pull the latest changes
 git pull
 
-# Rebuild the frontend
-cd frontend
-npm install
-npm run build
-
-# Restart services
-sudo systemctl restart network-web.service
-sudo systemctl restart network-test.timer
+# Rebuild and restart containers
+docker compose up -d --build
 ```
 
 ## Usage
 
-Access the web dashboard at: `http://CONTAINER_IP:5000`
+Access the web dashboard at: `http://YOUR_SERVER_IP:5000`
 
-## Development
-
-### Backend Development
-
-```bash
-# Start Flask development server
-export FLASK_APP=backend.app
-export FLASK_ENV=development
-flask run
-```
-
-### Frontend Development
-
-```bash
-# Start Vue development server with hot-reload
-cd frontend
-npm run serve
-```
+The dashboard shows:
+- Current network status
+- Historical latency, jitter, and packet loss graphs
+- 24-hour statistics
 
 ## Troubleshooting
 
 If you encounter issues:
 
-1. Check service status:
-   ```bash
-   systemctl status network-web.service
-   systemctl status network-test.service
-   ```
-
-2. View application logs:
-   ```bash
-   journalctl -u network-web.service
-   journalctl -u network-test.service
-   ```
-
-3. Test database connectivity:
+1. Check container status:
    ```bash
    cd /opt/network-evaluation-service
-   source venv/bin/activate
-   python -c "from backend.models import db, PingResult; from backend.app import create_app; app = create_app(); app.app_context().push(); print(PingResult.query.count())"
+   docker compose ps
    ```
 
-4. PostgreSQL Permission Issues:
-   
-   If you encounter errors like `permission denied for schema public` during database setup,
-   you can fix it using the provided utility script:
-   
+2. View container logs:
    ```bash
-   # Run as the postgres user
-   sudo -u postgres python backend/db_utils.py --confirm
+   # View logs for all containers
+   docker compose logs
+   
+   # View logs for a specific service
+   docker compose logs web
+   docker compose logs test
+   docker compose logs db
+   
+   # Follow logs in real-time
+   docker compose logs -f
    ```
-   
-   Alternatively, you can manually grant the necessary permissions:
-   
+
+3. Check if Docker services are running:
    ```bash
-   sudo -u postgres psql
-   postgres=# \c network_tests
-   network_tests=# CREATE SCHEMA IF NOT EXISTS network_eval;
-   network_tests=# GRANT ALL ON SCHEMA network_eval TO your_db_user;
-   network_tests=# GRANT USAGE ON SCHEMA public TO your_db_user;
-   network_tests=# GRANT CREATE ON SCHEMA public TO your_db_user;
-   postgres=# \q
+   systemctl status docker
+   systemctl status network-evaluation  # The systemd service created during installation
    ```
-   
-   Then try running the database initialization script again:
-   
+
+4. Restart Docker containers:
    ```bash
-   python backend/db_init.py
+   cd /opt/network-evaluation-service
+   docker compose down
+   docker compose up -d
    ```
 
 ## License

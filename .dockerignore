@@ -1,0 +1,27 @@
+# Git files
+.git
+.gitignore
+
+# Environment and OS files
+.env
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+*/.env
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+
+# Build directories
+frontend/node_modules
+frontend/dist
+
+# System folders
+deprecated/

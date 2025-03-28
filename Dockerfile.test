@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install ping tools
+RUN apt-get update && apt-get install -y iputils-ping && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy test runner files
+COPY backend/ backend/
+
+# Setup cron job to run the tests
+COPY docker/crontab /etc/cron.d/network-test
+RUN chmod 0644 /etc/cron.d/network-test && \
+    apt-get update && apt-get install -y cron && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Start cron
+CMD ["cron", "-f"]

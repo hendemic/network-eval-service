@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Node.js and npm
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    && curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy frontend files and build
+COPY frontend/ frontend/
+RUN cd frontend && npm install && npm run build
+
+# Copy backend files
+COPY backend/ backend/
+
+# Create a simple entry point script
+RUN echo '#!/usr/bin/env python3\nimport os\nfrom backend.app import create_app\n\napp = create_app(os.getenv("FLASK_CONFIG", "production"))\n\nif __name__ == "__main__":\n    app.run(host="0.0.0.0", port=5000)' > run.py
+RUN chmod +x run.py
+
+# Run the Flask application
+ENV FLASK_APP=backend.app
+ENV FLASK_CONFIG=production
+EXPOSE 5000
+CMD ["python", "run.py"]
