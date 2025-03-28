@@ -7,10 +7,16 @@ class Config:
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
     POSTGRES_PORT = os.environ.get('POSTGRES_PORT', '5432')
     POSTGRES_DB = os.environ.get('POSTGRES_DB', 'network_tests')
+    POSTGRES_SCHEMA = os.environ.get('POSTGRES_SCHEMA', 'network_eval')
     
     # SQLAlchemy configuration
     SQLALCHEMY_DATABASE_URI = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Apply the schema when using models
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "connect_args": {"options": f"-csearch_path={POSTGRES_SCHEMA}"}
+    }
     
     # App configuration
     DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'

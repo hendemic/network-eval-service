@@ -207,6 +207,34 @@ If you encounter issues:
    python -c "from backend.models import db, PingResult; from backend.app import create_app; app = create_app(); app.app_context().push(); print(PingResult.query.count())"
    ```
 
+4. PostgreSQL Permission Issues:
+   
+   If you encounter errors like `permission denied for schema public` during database setup,
+   you can fix it using the provided utility script:
+   
+   ```bash
+   # Run as the postgres user
+   sudo -u postgres python backend/db_utils.py --confirm
+   ```
+   
+   Alternatively, you can manually grant the necessary permissions:
+   
+   ```bash
+   sudo -u postgres psql
+   postgres=# \c network_tests
+   network_tests=# CREATE SCHEMA IF NOT EXISTS network_eval;
+   network_tests=# GRANT ALL ON SCHEMA network_eval TO your_db_user;
+   network_tests=# GRANT USAGE ON SCHEMA public TO your_db_user;
+   network_tests=# GRANT CREATE ON SCHEMA public TO your_db_user;
+   postgres=# \q
+   ```
+   
+   Then try running the database initialization script again:
+   
+   ```bash
+   python backend/db_init.py
+   ```
+
 ## License
 
 [MIT License](LICENSE)

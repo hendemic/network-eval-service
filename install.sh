@@ -30,6 +30,12 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# Check for sudo and warn if not available
+if ! command -v sudo &> /dev/null; then
+  echo -e "${YELLOW}Warning: 'sudo' command not found. This is fine if you're running as root.${NC}"
+  echo -e "${YELLOW}The script will use 'su' commands for database operations instead.${NC}"
+fi
+
 # Function to display progress
 progress() {
   echo -e "${YELLOW}➤ $1${NC}"
@@ -119,22 +125,71 @@ prompt_for_config
 
 # 4. Setup PostgreSQL database
 progress "Setting up PostgreSQL database..."
+# Use pg_exec function to run postgres commands with or without sudo
+pg_exec() {
+  local cmd=$1
+  if command -v sudo &> /dev/null; then
+    # If sudo is available, use it
+    sudo -u postgres psql -c "$cmd"
+  else
+    # If sudo is not available (and we're root), use su directly
+    su - postgres -c "psql -c \"$cmd\""
+  fi
+}
+
+pg_exec_query() {
+  local query=$1
+  if command -v sudo &> /dev/null; then
+    # If sudo is available, use it
+    sudo -u postgres psql -tAc "$query"
+  else
+    # If sudo is not available (and we're root), use su directly
+    su - postgres -c "psql -tAc \"$query\""
+  fi
+}
+
+pg_exec_db() {
+  local db=$1
+  local cmd=$2
+  if command -v sudo &> /dev/null; then
+    # If sudo is available, use it
+    sudo -u postgres psql -d "$db" -c "$cmd"
+  else
+    # If sudo is not available (and we're root), use su directly
+    su - postgres -c "psql -d \"$db\" -c \"$cmd\""
+  fi
+}
+
 # Check if the database already exists
-DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
+DB_EXISTS=$(pg_exec_query "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
+
 if [ "$DB_EXISTS" = "1" ]; then
   echo -e "${YELLOW}Database $DB_NAME already exists. Skipping database creation.${NC}"
 else
   # Create database and user
-  sudo -u postgres psql -c "CREATE DATABASE $DB_NAME;"
-  USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
+  pg_exec "CREATE DATABASE $DB_NAME;"
+  USER_EXISTS=$(pg_exec_query "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
   if [ "$USER_EXISTS" != "1" ]; then
-    sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+    pg_exec "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
   else
-    sudo -u postgres psql -c "ALTER USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+    pg_exec "ALTER USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
   fi
-  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
+  pg_exec "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
   success "Database and user created successfully"
 fi
+
+# Create schema and set up permissions
+SCHEMA_NAME="network_eval"
+pg_exec_db "$DB_NAME" "CREATE SCHEMA IF NOT EXISTS $SCHEMA_NAME;"
+pg_exec_db "$DB_NAME" "GRANT ALL ON SCHEMA $SCHEMA_NAME TO $DB_USER;"
+pg_exec_db "$DB_NAME" "GRANT USAGE ON SCHEMA public TO $DB_USER;"
+pg_exec_db "$DB_NAME" "GRANT CREATE ON SCHEMA public TO $DB_USER;"
+
+# Create alembic_version table ahead of time if it doesn't exist and grant permissions
+pg_exec_db "$DB_NAME" "CREATE TABLE IF NOT EXISTS public.alembic_version (version_num VARCHAR(32) NOT NULL, CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num));"
+pg_exec_db "$DB_NAME" "GRANT ALL ON TABLE public.alembic_version TO $DB_USER;"
+
+success "Database configured with proper schema and permissions"
 
 # 5. Setup Python virtual environment and install requirements
 progress "Setting up Python environment..."
@@ -153,6 +208,7 @@ POSTGRES_PASSWORD=$DB_PASSWORD
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=$DB_NAME
+POSTGRES_SCHEMA=network_eval
 FLASK_CONFIG=production
 SECRET_KEY=$(openssl rand -hex 24)
 EOF
@@ -167,7 +223,10 @@ cd "$INSTALL_DIR"
 export POSTGRES_USER=$DB_USER
 export POSTGRES_PASSWORD=$DB_PASSWORD
 export POSTGRES_DB=$DB_NAME
+export POSTGRES_SCHEMA=network_eval
 source venv/bin/activate
+
+# Run database initialization
 python backend/db_init.py
 success "Database initialized"
 

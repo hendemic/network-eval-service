@@ -1,7 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from sqlalchemy.schema import MetaData
+from config import config
 
-db = SQLAlchemy()
+# Create a custom MetaData object with the schema name
+metadata = MetaData(schema=config['default'].POSTGRES_SCHEMA)
+
+# Initialize SQLAlchemy with the custom metadata
+db = SQLAlchemy(metadata=metadata)
 
 class PingResult(db.Model):
     __tablename__ = 'ping_results'
