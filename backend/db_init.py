@@ -75,7 +75,7 @@ def init_db():
                     "# add your model's MetaData object here\nfrom models import metadata as target_metadata"
                 ).replace(
                     "config.set_main_option(",
-                    "# Set schema name for migrations\n    config.set_main_option('sqlalchemy.schema', os.environ.get('POSTGRES_SCHEMA', 'network_eval'))\n    config.set_main_option("
+                    "# Set schema name for migrations\nconfig.set_main_option('sqlalchemy.schema', os.environ.get('POSTGRES_SCHEMA', 'network_eval'))\n    config.set_main_option("
                 ).replace(
                     "target_metadata = mymodel.Base.metadata",
                     "# target_metadata = mymodel.Base.metadata\n# target_metadata is already imported from models"
