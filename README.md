@@ -31,8 +31,8 @@ The project includes an automated installation script that will set up everythin
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/network-evaluation-service.git
-cd network-evaluation-service
+git clone https://github.com/hendemic/network-eval-service.git
+cd network-eval-service
 
 # Make the install script executable
 chmod +x install.sh
@@ -53,10 +53,10 @@ sudo ./install.sh
 2. **Install Using the Script**:
    - Connect to your container: `pct enter CONTAINER_ID`
    - Install git: `apt update && apt install -y git`
-   - Clone the repository: `git clone https://github.com/yourusername/network-evaluation-service.git`
+   - Clone the repository: `git clone https://github.com/hendemic/network-eval-service.git`
    - Run the installer:
      ```bash
-     cd network-evaluation-service
+     cd network-eval-service
      chmod +x install.sh
      ./install.sh
      ```
