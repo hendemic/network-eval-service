@@ -64,32 +64,155 @@ def init_db():
             print("You may need to manually grant database privileges to the user.")
         
         # Initialize migrations if needed
-        if not os.path.exists('migrations'):
+        if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'migrations', 'versions')):
             print("Initializing migrations directory...")
+            # Create alembic.ini if it doesn't exist
+            alembic_ini_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'migrations', 'alembic.ini')
+            if not os.path.exists(alembic_ini_path):
+                with open(alembic_ini_path, 'w') as f:
+                    f.write("""# A generic, single database configuration.
+
+[alembic]
+# path to migration scripts
+script_location = migrations
+
+# template used to generate migration files
+# file_template = %%(rev)s_%%(slug)s
+
+# timezone to use when rendering the date
+# within the migration file as well as the filename.
+# string value is passed to dateutil.tz.gettz()
+# leave blank for localtime
+# timezone =
+
+# max length of characters to apply to the
+# "slug" field
+# truncate_slug_length = 40
+
+# set to 'true' to run the environment during
+# the 'revision' command, regardless of autogenerate
+# revision_environment = false
+
+# set to 'true' to allow .pyc and .pyo files without
+# a source .py file to be detected as revisions in the
+# versions/ directory
+# sourceless = false
+
+# version location specification; this defaults
+# to migrations/versions.  When using multiple version
+# directories, initial revisions must be specified with --version-path
+# version_locations = %(here)s/bar %(here)s/bat migrations/versions
+
+# the output encoding used when revision files
+# are written from script.py.mako
+# output_encoding = utf-8
+
+sqlalchemy.url = driver://user:pass@localhost/dbname
+
+
+[post_write_hooks]
+# post_write_hooks defines scripts or Python functions that are run
+# on newly generated revision scripts.  See the documentation for further
+# detail and examples
+
+# format using "black" - use the console_scripts runner, against the "black" entrypoint
+# hooks=black
+# black.type=console_scripts
+# black.entrypoint=black
+# black.options=-l 79
+
+# Logging configuration
+[loggers]
+keys = root,sqlalchemy,alembic
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARN
+handlers = console
+qualname =
+
+[logger_sqlalchemy]
+level = WARN
+handlers =
+qualname = sqlalchemy.engine
+
+[logger_alembic]
+level = INFO
+handlers =
+qualname = alembic
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(levelname)-5.5s [%(name)s] %(message)s
+datefmt = %H:%M:%S""")
+            
+            # Create versions directory if it doesn't exist
+            os.makedirs(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'migrations', 'versions'), exist_ok=True)
+            
+            # Initialize migrations
             init()
             
-            # Update the migrations/env.py to use the custom schema
-            if os.path.exists('migrations/env.py'):
-                with open('migrations/env.py', 'r') as f:
+            # If migrations/env.py exists, validate it
+            migrations_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'migrations', 'env.py')
+            if os.path.exists(migrations_env_path):
+                with open(migrations_env_path, 'r') as f:
                     env_content = f.read()
                 
-                # Update the env.py file to include schema_name in render_item
-                updated_env_content = env_content.replace(
-                    "# add your model's MetaData object here",
-                    "# add your model's MetaData object here\nfrom models import metadata as target_metadata"
-                ).replace(
-                    "config.set_main_option(",
-                    "# Set schema name for migrations\nconfig.set_main_option('sqlalchemy.schema', os.environ.get('POSTGRES_SCHEMA', 'network_eval'))\n    config.set_main_option("
-                ).replace(
-                    "target_metadata = mymodel.Base.metadata",
-                    "# target_metadata = mymodel.Base.metadata\n# target_metadata is already imported from models"
-                ).replace(
-                    "import os",
-                    "import os\nfrom models import db"
-                )
+                # Make sure required imports are there
+                if 'from backend.models import db' not in env_content:
+                    env_content = env_content.replace(
+                        "from alembic import context",
+                        "from alembic import context\nfrom backend.models import db"
+                    )
                 
-                with open('migrations/env.py', 'w') as f:
-                    f.write(updated_env_content)
+                if 'from backend.models import metadata as target_metadata' not in env_content:
+                    env_content = env_content.replace(
+                        "# add your model's MetaData object here",
+                        "# add your model's MetaData object here\nfrom backend.models import metadata as target_metadata"
+                    )
+                
+                if 'set_main_option(\'sqlalchemy.schema\'' not in env_content:
+                    env_content = env_content.replace(
+                        "def run_migrations_offline():",
+                        "def run_migrations_offline():\n    # Set schema name for migrations\n    config.set_main_option('sqlalchemy.schema', os.environ.get('POSTGRES_SCHEMA', 'network_eval'))"
+                    )
+                    env_content = env_content.replace(
+                        "def run_migrations_online():",
+                        "def run_migrations_online():\n    # Set schema name for migrations\n    config.set_main_option('sqlalchemy.schema', os.environ.get('POSTGRES_SCHEMA', 'network_eval'))"
+                    )
+                
+                # Add logging safety checks
+                if 'try:' not in env_content and 'fileConfig(config.config_file_name)' in env_content:
+                    env_content = env_content.replace(
+                        "fileConfig(config.config_file_name)",
+                        """import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)-5.5s [%(name)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger('alembic.env')
+
+# Try to set up logging using the config file, but don't fail if it can't be done
+try:
+    if config.config_file_name is not None:
+        fileConfig(config.config_file_name)
+except (KeyError, AttributeError):
+    logger.info("Alembic config file not found or does not contain formatting configuration. Using default logging setup.")"""
+                    )
+                
+                with open(migrations_env_path, 'w') as f:
+                    f.write(env_content)
                 
                 print("Updated migrations/env.py with schema configuration.")
         

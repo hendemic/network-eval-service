@@ -1,4 +1,5 @@
 import os
+import logging
 from logging.config import fileConfig
 
 from alembic import context
@@ -10,9 +11,20 @@ from backend.models import db
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-fileConfig(config.config_file_name)
+# Setup logging manually if fileConfig can't be used
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)-5.5s [%(name)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger('alembic.env')
+
+# Try to set up logging using the config file, but don't fail if it can't be done
+try:
+    if config.config_file_name is not None:
+        fileConfig(config.config_file_name)
+except (KeyError, AttributeError):
+    logger.info("Alembic config file not found or does not contain formatting configuration. Using default logging setup.")
 
 # add your model's MetaData object here
 from backend.models import metadata as target_metadata
