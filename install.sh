@@ -109,16 +109,32 @@ fi
 success "System updated and dependencies installed"
 
 # 2. Clone the repository
-progress "Cloning repository from $REPO_URL..."
+# Choose between production and development branch
+DEFAULT_BRANCH="production"
+read -p "Which branch do you want to install? [production/development] (default: production): " BRANCH_CHOICE
+BRANCH=${BRANCH_CHOICE:-$DEFAULT_BRANCH}
+
+# Convert "development" to "main" for git operations
+if [ "$BRANCH" = "development" ]; then
+  GIT_BRANCH="main"
+  BRANCH_NAME="development"
+else
+  GIT_BRANCH="production"
+  BRANCH_NAME="production"
+fi
+
+progress "Cloning repository from $REPO_URL ($BRANCH_NAME branch)..."
 if [ -d "$INSTALL_DIR" ]; then
   echo -e "${YELLOW}Directory already exists. Updating...${NC}"
   cd "$INSTALL_DIR"
-  git pull
+  git fetch
+  git checkout $GIT_BRANCH
+  git pull origin $GIT_BRANCH
 else
-  git clone $REPO_URL "$INSTALL_DIR"
+  git clone -b $GIT_BRANCH $REPO_URL "$INSTALL_DIR"
   cd "$INSTALL_DIR"
 fi
-success "Repository cloned successfully"
+success "Repository cloned successfully ($BRANCH_NAME branch)"
 
 # 3. Get database configuration
 prompt_for_config
