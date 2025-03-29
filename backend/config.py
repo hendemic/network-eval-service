@@ -33,9 +33,18 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
 
+class TestingConfig(Config):
+    DEBUG = True
+    TESTING = True
+    # Use in-memory SQLite database for testing
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    # Remove schema-specific options for SQLite
+    SQLALCHEMY_ENGINE_OPTIONS = {}
+
 # Configuration dictionary
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
+    'testing': TestingConfig,
     'default': DevelopmentConfig
 }

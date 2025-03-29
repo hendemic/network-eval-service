@@ -4,3 +4,4 @@ env
 .env/
 .venv/
 ENV/
+venv-py312

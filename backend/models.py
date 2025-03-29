@@ -3,11 +3,19 @@ from datetime import datetime
 from sqlalchemy.schema import MetaData
 from backend.config import config
 
-# Create a custom MetaData object with the schema name
-metadata = MetaData(schema=config['default'].POSTGRES_SCHEMA)
+# Create a MetaData object without a schema
+metadata = MetaData()
 
-# Initialize SQLAlchemy with the custom metadata
+# Initialize SQLAlchemy with the basic metadata
 db = SQLAlchemy(metadata=metadata)
+
+# This will be called during app initialization to set the 
+# schema name only if we're using PostgreSQL
+def configure_schema_if_postgres(app):
+    # Only set schema for PostgreSQL, not SQLite
+    if not app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
+        # Tables haven't been created yet, so we can safely set schema
+        db.metadata.schema = config['default'].POSTGRES_SCHEMA
 
 class PingResult(db.Model):
     __tablename__ = 'ping_results'

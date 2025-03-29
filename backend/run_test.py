@@ -7,7 +7,7 @@ from flask import Flask
 # Add the parent directory to the path so we can import our modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.models import db, PingResult
+from backend.models import db, PingResult, configure_schema_if_postgres
 from backend.config import config
 from backend.pingTest import ping_test
 
@@ -15,6 +15,9 @@ def run_network_test():
     # Create a minimal Flask app
     app = Flask(__name__)
     app.config.from_object(config['default'])
+    
+    # Configure the schema if we're using PostgreSQL
+    configure_schema_if_postgres(app)
     
     # Initialize database
     db.init_app(app)

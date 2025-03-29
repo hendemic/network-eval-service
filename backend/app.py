@@ -4,13 +4,16 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 import os
 
-from backend.models import db, PingResult
+from backend.models import db, PingResult, configure_schema_if_postgres
 from backend.config import config
 from backend.pingTest import ping_test
 
 def create_app(config_name='default'):
     app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
     app.config.from_object(config[config_name])
+    
+    # Configure the schema if we're using PostgreSQL
+    configure_schema_if_postgres(app)
     
     # Initialize extensions
     db.init_app(app)
