@@ -3,16 +3,31 @@
     <h2>Network Test History</h2>
     
     <div class="controls">
-      <div class="time-filters">
-        <button
-          v-for="(option, index) in timeOptions"
-          :key="index"
-          @click="setTimeRange(option.hours)"
-          :class="{ active: selectedHours === option.hours }"
-          class="time-btn"
-        >
-          {{ option.label }}
-        </button>
+      <div class="filter-row">
+        <div class="time-filters">
+          <button
+            v-for="(option, index) in timeOptions"
+            :key="index"
+            @click="setTimeRange(option.hours)"
+            :class="{ active: selectedHours === option.hours }"
+            class="time-btn"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+        
+        <div class="page-size-controls">
+          <span class="control-label">Entries per page:</span>
+          <button
+            v-for="size in pageSizeOptions"
+            :key="size"
+            @click="setPageSize(size)"
+            :class="{ active: pageSize === size }"
+            class="page-size-btn"
+          >
+            {{ size }}
+          </button>
+        </div>
       </div>
     </div>
     
@@ -25,42 +40,6 @@
     </div>
     
     <div v-else>
-      <div class="card chart-card">
-        <h3>Network Latency</h3>
-        <network-chart 
-          v-if="latencyData.length > 0"
-          :data="latencyData"
-          metric="Latency"
-          unit="ms"
-          color="#42b983"
-        />
-        <p v-else>No data available for the selected time period</p>
-      </div>
-      
-      <div class="card chart-card">
-        <h3>Network Jitter</h3>
-        <network-chart 
-          v-if="jitterData.length > 0"
-          :data="jitterData"
-          metric="Jitter"
-          unit="ms"
-          color="#2c3e50"
-        />
-        <p v-else>No data available for the selected time period</p>
-      </div>
-      
-      <div class="card chart-card">
-        <h3>Packet Loss</h3>
-        <network-chart 
-          v-if="packetLossData.length > 0"
-          :data="packetLossData"
-          metric="Packet Loss"
-          unit="%"
-          color="#e74c3c"
-        />
-        <p v-else>No data available for the selected time period</p>
-      </div>
-      
       <div class="card">
         <h3>Raw Data</h3>
         <table class="data-table">
@@ -76,7 +55,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="result in pingResults" :key="result.id">
+            <tr v-for="result in paginatedResults" :key="result.id">
               <td>{{ formatDate(result.timestamp) }}</td>
               <td>{{ result.target }}</td>
               <td>{{ result.avg_latency.toFixed(2) }}</td>
@@ -87,6 +66,30 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Pagination controls -->
+        <div class="pagination-controls">
+          <div class="page-info">
+            Showing {{ startIndex + 1 }}-{{ Math.min(endIndex, pingResults.length) }} of {{ pingResults.length }} entries
+          </div>
+          <div class="page-buttons">
+            <button 
+              @click="prevPage" 
+              :disabled="currentPage === 1"
+              class="pagination-btn"
+            >
+              Previous
+            </button>
+            <span class="page-indicator">{{ currentPage }} / {{ totalPages }}</span>
+            <button 
+              @click="nextPage" 
+              :disabled="currentPage === totalPages"
+              class="pagination-btn"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -100,16 +103,16 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import NetworkChart from '../components/NetworkChart.vue'
 
 export default {
   name: 'History',
   components: {
-    NetworkChart
   },
   setup() {
     const store = useStore()
     const selectedHours = ref(24)
+    const currentPage = ref(1)
+    const pageSize = ref(10)
     
     const timeOptions = [
       { label: '3 Hours', hours: 3 },
@@ -118,6 +121,8 @@ export default {
       { label: '3 Days', hours: 72 },
       { label: '7 Days', hours: 168 }
     ]
+    
+    const pageSizeOptions = [10, 50, 100]
     
     // Fetch data on component mount
     onMounted(() => {
@@ -129,6 +134,8 @@ export default {
         hours: selectedHours.value,
         limit: 10000
       })
+      // Reset to first page when new data is fetched
+      currentPage.value = 1
     }
     
     const setTimeRange = (hours) => {
@@ -136,8 +143,26 @@ export default {
       fetchData()
     }
     
+    const setPageSize = (size) => {
+      pageSize.value = size
+      currentPage.value = 1 // Reset to first page when changing page size
+    }
+    
     const refreshData = () => {
       fetchData()
+    }
+    
+    // Pagination methods
+    const nextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++
+      }
+    }
+    
+    const prevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--
+      }
     }
     
     // Format date for display
@@ -145,17 +170,48 @@ export default {
       return new Date(dateString + 'Z').toLocaleString();
     }
     
+    // Computed for pagination
+    const pingResults = computed(() => {
+      // Get results sorted by timestamp (newest first)
+      return [...store.state.pingResults].sort((a, b) => {
+        return new Date(b.timestamp) - new Date(a.timestamp)
+      })
+    })
+    
+    const totalPages = computed(() => {
+      return Math.ceil(pingResults.value.length / pageSize.value)
+    })
+    
+    const startIndex = computed(() => {
+      return (currentPage.value - 1) * pageSize.value
+    })
+    
+    const endIndex = computed(() => {
+      return startIndex.value + pageSize.value
+    })
+    
+    const paginatedResults = computed(() => {
+      return pingResults.value.slice(startIndex.value, endIndex.value)
+    })
+    
     return {
       loading: computed(() => store.state.loading),
       error: computed(() => store.state.error),
-      pingResults: computed(() => store.state.pingResults),
-      latencyData: computed(() => store.getters.latencyData),
-      jitterData: computed(() => store.getters.jitterData),
-      packetLossData: computed(() => store.getters.packetLossData),
+      pingResults,
+      paginatedResults,
       timeOptions,
+      pageSizeOptions,
       selectedHours,
+      pageSize,
+      currentPage,
+      totalPages,
+      startIndex,
+      endIndex,
       setTimeRange,
+      setPageSize,
       refreshData,
+      nextPage,
+      prevPage,
       formatDate
     }
   }
@@ -171,13 +227,21 @@ export default {
   margin-bottom: 2rem;
 }
 
+.filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .time-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.time-btn {
+.time-btn, .page-size-btn {
   padding: 0.5rem 1rem;
   background-color: #f1f1f1;
   border: none;
@@ -185,9 +249,20 @@ export default {
   cursor: pointer;
 }
 
-.time-btn.active {
+.time-btn.active, .page-size-btn.active {
   background-color: var(--primary-color);
   color: white;
+}
+
+.page-size-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.9rem;
+  color: #666;
 }
 
 .chart-card {
@@ -225,6 +300,48 @@ export default {
 
 .data-table tr:hover {
   background-color: #f1f1f1;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  padding: 0.4rem 0.8rem;
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+  background-color: #e1e1e1;
+}
+
+.page-indicator {
+  padding: 0 0.5rem;
+  font-size: 0.9rem;
 }
 
 .actions {

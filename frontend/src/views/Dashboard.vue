@@ -81,13 +81,39 @@
         </div>
       </div>
       
-      <!-- Recent data chart -->
+      <!-- Recent data charts -->
       <div class="card chart-card">
-        <h3>Recent Network Performance</h3>
+        <h3>Recent Network Latency</h3>
         <line-chart 
           v-if="chartData.length > 0"
           :chart-data="chartData" 
           :chart-labels="chartLabels"
+        />
+        <p v-else>Not enough data to display chart</p>
+      </div>
+      
+      <!-- Network Jitter Chart -->
+      <div class="card chart-card">
+        <h3>Network Jitter</h3>
+        <network-chart 
+          v-if="jitterData.length > 0"
+          :data="jitterData"
+          metric="Jitter"
+          unit="ms"
+          color="#2c3e50"
+        />
+        <p v-else>Not enough data to display chart</p>
+      </div>
+      
+      <!-- Packet Loss Chart -->
+      <div class="card chart-card">
+        <h3>Packet Loss</h3>
+        <network-chart 
+          v-if="packetLossData.length > 0"
+          :data="packetLossData"
+          metric="Packet Loss"
+          unit="%"
+          color="#e74c3c"
         />
         <p v-else>Not enough data to display chart</p>
       </div>
@@ -108,11 +134,13 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
 import LineChart from '../components/LineChart.vue'
+import NetworkChart from '../components/NetworkChart.vue'
 
 export default {
   name: 'Dashboard',
   components: {
-    LineChart
+    LineChart,
+    NetworkChart
   },
   setup() {
     const store = useStore()
@@ -199,6 +227,8 @@ export default {
       stats: computed(() => store.state.stats),
       chartData,
       chartLabels,
+      jitterData: computed(() => store.getters.jitterData),
+      packetLossData: computed(() => store.getters.packetLossData),
       refreshData,
       formatDate,
       getLatencyClass,
