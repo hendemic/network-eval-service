@@ -76,7 +76,7 @@ export default {
 .stat-value {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-xs);
   color: var(--metric-value-color);
 }
 
