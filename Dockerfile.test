@@ -17,7 +17,15 @@ COPY backend/ backend/
 COPY docker/crontab /etc/cron.d/network-test
 RUN chmod 0644 /etc/cron.d/network-test && \
     apt-get update && apt-get install -y cron && \
+    crontab /etc/cron.d/network-test && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Start cron
-CMD ["cron", "-f"]
+# Create log file and set permissions
+RUN touch /var/log/cron.log && chmod 0666 /var/log/cron.log
+
+# Create startup script
+RUN echo '#!/bin/bash\necho "Starting cron service..."\ncrontab -l\necho "Cron jobs loaded. Starting cron daemon..."\ncron -f' > /start.sh && \
+    chmod +x /start.sh
+
+# Start cron with the startup script
+CMD ["/start.sh"]
