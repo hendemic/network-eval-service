@@ -29,7 +29,7 @@ The installer will automatically check for Docker and Docker Compose and install
 ```bash
 # Clone the repository
 git clone https://github.com/hendemic/network-eval-service.git
-cd network-evaluation-service
+cd network-eval-service
 
 # Make the install script executable
 chmod +x install.sh
@@ -116,7 +116,7 @@ You can also troubleshoot manually:
    ```bash
    # View logs for all containers
    docker compose logs
-   
+
    # View logs for a specific service
    docker compose logs web
    docker compose logs test
@@ -128,7 +128,7 @@ You can also troubleshoot manually:
    ```bash
    # Connect to the PostgreSQL database
    docker compose exec db psql -U netmon -d network_tests
-   
+
    # Inside PostgreSQL, check the schema and tables
    \dn  -- List schemas
    \dt network_eval.*  -- List tables in the network_eval schema
