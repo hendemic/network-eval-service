@@ -56,15 +56,10 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
     # Create a more robust initialization script
-    command: |
-      #!/bin/bash
-      set -e
-      
-      echo "Waiting for database to be fully ready..."
-      sleep 5
-      echo "Starting database initialization..."
-      
-      # Create the diagnostic script
+    entrypoint: ["bash", "-c"]
+    command: >
+      sleep 5 &&
+      echo "Starting database initialization..." &&
       cat > /tmp/check_db.py << 'EOF'
       import sys
       import os
@@ -102,8 +97,7 @@ services:
                   print("All connection attempts failed")
                   sys.exit(1)
       EOF
-
-      # Create the initialization script
+      &&
       cat > /tmp/init_db.py << 'EOF'
       import sys
       import os
@@ -121,8 +115,7 @@ services:
           print(f"Database initialization error: {str(e)}", file=sys.stderr)
           sys.exit(1)
       EOF
-
-      # Run the scripts
+      &&
       python /tmp/check_db.py && python /tmp/init_db.py
     restart: "no"
 
