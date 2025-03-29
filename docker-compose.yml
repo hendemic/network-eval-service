@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:15-alpine
     volumes:
-      - postgres_data:/var/lib/postgres/data
+      - postgres_data:/var/lib/postgresql/data
       - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-netmon}
