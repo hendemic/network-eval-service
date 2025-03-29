@@ -70,8 +70,8 @@ export default {
       // Clear previous chart
       d3.select(chartContainer.value).selectAll('*').remove()
       
-      // Set dimensions
-      const margin = { top: 20, right: 20, bottom: 30, left: 40 }
+      // Set dimensions with more bottom margin for X-axis labels
+      const margin = { top: 20, right: 20, bottom: 40, left: 40 }
       const width = chartContainer.value.clientWidth - margin.left - margin.right
       const height = 300 - margin.top - margin.bottom
       
@@ -109,11 +109,47 @@ export default {
         .domain([0, yMax])
         .range([height, 0])
       
-      // Draw axes
+      // Configure X-axis ticks based on selected time range
+      let xAxisTicks;
+      
+      // Set appropriate tick intervals based on selected hours
+      if (props.selectedHours <= 3) {
+        // Every 15 minutes for 3-hour view
+        xAxisTicks = d3.timeMinute.every(15);
+      } else if (props.selectedHours <= 24) {
+        // Every hour for 12-hour and 24-hour views
+        xAxisTicks = d3.timeHour.every(1);
+      } else {
+        // Every day for 3-day and 7-day views
+        xAxisTicks = d3.timeDay.every(1);
+      }
+      
+      // Configure time format based on selected hours
+      const timeFormat = (date) => {
+        if (props.selectedHours <= 24) {
+          // Show hour:minute for shorter time ranges
+          return d3.timeFormat('%H:%M')(date);
+        } else {
+          // Show month/day for longer time ranges
+          return d3.timeFormat('%m/%d')(date);
+        }
+      };
+      
+      // Draw X-axis with configured ticks and format
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(xScale).tickSize(0).tickFormat(''))
+        .call(d3.axisBottom(xScale)
+          .ticks(xAxisTicks)
+          .tickFormat(timeFormat)
+          .tickSizeOuter(0)
+        )
+        .selectAll('text')
+          .style('text-anchor', 'end')
+          .attr('dy', '0.5em')
+          .attr('dx', '-0.3em')
+          .attr('transform', 'rotate(-20)');
       
+      // Draw Y-axis
       svg.append('g')
         .call(d3.axisLeft(yScale))
       
@@ -235,6 +271,7 @@ export default {
 }
 
 :deep(.tick text) {
-  display: none;
+  font-size: 10px;
+  fill: #666;
 }
 </style>
