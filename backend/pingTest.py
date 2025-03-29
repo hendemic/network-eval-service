@@ -61,7 +61,7 @@ def ping_test(target: str = "1.1.1.1", count: int = 100, interval: str = "0.1") 
     
     # Return results as dictionary for database storage
     return {
-        "timestamp": datetime.datetime.now(),
+        "timestamp": datetime.datetime.utcnow(),  # Use UTC time consistently
         "target": target,
         "packet_loss": packet_loss,
         "min_latency": min_latency,

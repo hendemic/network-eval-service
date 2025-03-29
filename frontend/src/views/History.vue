@@ -142,8 +142,7 @@ export default {
     
     // Format date for display
     const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleString()
+      return new Date(dateString + 'Z').toLocaleString();
     }
     
     return {

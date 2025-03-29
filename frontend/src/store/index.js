@@ -14,19 +14,19 @@ export default createStore({
   getters: {
     latencyData(state) {
       return state.pingResults.map(result => ({
-        timestamp: new Date(result.timestamp),
+        timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
         value: result.avg_latency
       })).sort((a, b) => a.timestamp - b.timestamp)
     },
     jitterData(state) {
       return state.pingResults.map(result => ({
-        timestamp: new Date(result.timestamp),
+        timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
         value: result.jitter
       })).sort((a, b) => a.timestamp - b.timestamp)
     },
     packetLossData(state) {
       return state.pingResults.map(result => ({
-        timestamp: new Date(result.timestamp),
+        timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
         value: result.packet_loss
       })).sort((a, b) => a.timestamp - b.timestamp)
     }

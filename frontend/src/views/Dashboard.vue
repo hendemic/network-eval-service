@@ -148,8 +148,9 @@ export default {
     
     // Format date for display
     const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleString()
+      // Add 'Z' to indicate this is UTC time
+      const date = new Date(dateString + 'Z');
+      return date.toLocaleString();
     }
     
     // Compute class based on metric values
