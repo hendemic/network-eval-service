@@ -3,7 +3,9 @@
     <div 
       v-if="show"
       class="tooltip" 
-      :class="{'tooltip-chart': isChartTooltip}"
+      :class="{
+        'tooltip-chart': isChartTooltip
+      }"
       :style="{
         left: `${x}px`,
         top: `${y}px`,
@@ -160,6 +162,8 @@ export default {
       y.value = clientY;
       tooltipContent.value = content;
       isChartTooltip.value = isChart;
+      // No need to determine position anymore since we removed the arrow
+      
       show.value = true;
       emit('update:show', true);
     };
@@ -200,12 +204,13 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Chart tooltips get a higher z-index */
+/* Chart tooltips get a higher z-index and enhanced styling */
 .tooltip-chart {
   z-index: 10000;
+  position: relative;
 }
 
-/* Invert colors for dark theme */
+/* Dark theme adjustments */
 .dark-theme .tooltip {
   background: rgba(255, 255, 255, 0.85);
   color: #222;

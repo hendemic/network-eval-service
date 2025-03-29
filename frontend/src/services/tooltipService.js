@@ -43,7 +43,54 @@ const tooltipState = reactive({
     // Show the tooltip if an instance is available
     if (tooltipInstance && typeof tooltipInstance.showAt === 'function') {
       try {
-        tooltipInstance.showAt(x, y, content, isChart);
+        // Get viewport dimensions
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // Estimate tooltip dimensions - we'll use averages here
+        // In a more sophisticated version, we could measure the actual tooltip after rendering
+        const estimatedTooltipHeight = 80; // pixels, approximate
+        const estimatedTooltipWidth = 200; // pixels, approximate
+        
+        // Calculate optimal position
+        let posX = x;
+        let posY = y;
+        
+        // For chart tooltips, apply smart positioning
+        if (isChart) {
+          // Horizontal position - ensure tooltip doesn't go off screen
+          if (x + (estimatedTooltipWidth / 2) > viewportWidth) {
+            // Too close to right edge
+            posX = viewportWidth - (estimatedTooltipWidth / 2) - 10;
+          } else if (x - (estimatedTooltipWidth / 2) < 0) {
+            // Too close to left edge
+            posX = (estimatedTooltipWidth / 2) + 10;
+          }
+          
+          // Vertical position - prefer above the cursor for chart data
+          // to avoid obscuring the data point
+          const spaceAbove = y;
+          const spaceBelow = viewportHeight - y;
+          
+          // Default offset to position tooltip away from cursor
+          const verticalOffset = 25; // pixels
+          
+          if (spaceAbove >= estimatedTooltipHeight + verticalOffset) {
+            // Enough space above, position tooltip above cursor
+            posY = y - estimatedTooltipHeight - verticalOffset;
+          } else if (spaceBelow >= estimatedTooltipHeight + verticalOffset) {
+            // Enough space below, position tooltip below cursor
+            posY = y + verticalOffset;
+          } else {
+            // Limited space both above and below, use the side with more space
+            posY = spaceAbove > spaceBelow ? 
+              y - estimatedTooltipHeight - 5 : // Above with minimal offset
+              y + 5; // Below with minimal offset
+          }
+        }
+        
+        // Show the tooltip at the calculated position
+        tooltipInstance.showAt(posX, posY, content, isChart);
         return true;
       } catch (e) {
         console.error('Error showing tooltip:', e);

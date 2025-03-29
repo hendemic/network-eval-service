@@ -214,10 +214,10 @@ export default {
               ${props.metric}: <strong>${d.value.toFixed(2)} ${props.unit}</strong>
             </div>`;
           
-          // Show tooltip using the global tooltip system
+          // Show tooltip using the global tooltip system with smart positioning
           showTooltipAt(
-            event.clientX + 10, 
-            event.clientY - 28, 
+            event.clientX, 
+            event.clientY, 
             tooltipContent,
             true // isChart = true
           );
@@ -235,10 +235,10 @@ export default {
               ${props.metric}: <strong>${d.value.toFixed(2)} ${props.unit}</strong>
             </div>`;
           
-          // Update tooltip position
+          // Update tooltip position with smart positioning
           showTooltipAt(
-            event.clientX + 10, 
-            event.clientY - 28, 
+            event.clientX, 
+            event.clientY, 
             tooltipContent,
             true // isChart = true
           );
