@@ -1,33 +1,17 @@
 <template>
   <div class="network-metric-chart-container">
     <div ref="chartContainer" class="chart"></div>
-    <Tooltip 
-      :visible="tooltipVisible" 
-      :x="tooltipX" 
-      :y="tooltipY"
-    >
-      <div v-if="tooltipData">
-        <div style="font-weight: bold; margin-bottom: 4px;">
-          {{ tooltipData.date }} {{ tooltipData.time }}
-        </div>
-        <div>
-          {{ metric }}: <strong>{{ tooltipData.value }} {{ unit }}</strong>
-        </div>
-      </div>
-    </Tooltip>
+    <!-- The global tooltip component is used instead -->
   </div>
 </template>
 
 <script>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import * as d3 from 'd3'
-import Tooltip from './Tooltip.vue'
+import tooltipService from '../services/tooltipService.js'
 
 export default {
   name: 'NetworkMetricChart',
-  components: {
-    Tooltip
-  },
   props: {
     metric: {
       type: String,
@@ -57,11 +41,9 @@ export default {
   setup(props) {
     const chartContainer = ref(null)
     
-    // Tooltip state
-    const tooltipVisible = ref(false)
-    const tooltipX = ref(0)
-    const tooltipY = ref(0)
-    const tooltipData = ref(null)
+    // Use the tooltip service directly
+    const showTooltipAt = tooltipService.showTooltipAt.bind(tooltipService);
+    const hideTooltip = tooltipService.hideAll.bind(tooltipService);
     
     // Get the appropriate chart color based on the metric
     const getChartColor = () => {
@@ -224,22 +206,42 @@ export default {
           // Make sure we have a valid timestamp
           const date = new Date(d.timestamp)
           
-          // Update tooltip data
-          tooltipData.value = {
-            date: date.toLocaleDateString(),
-            time: date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}),
-            value: d.value.toFixed(2)
-          }
+          // Format content for tooltip
+          const tooltipContent = `<div class="tooltip-header">
+              ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+            </div>
+            <div class="tooltip-content">
+              ${props.metric}: <strong>${d.value.toFixed(2)} ${props.unit}</strong>
+            </div>`;
           
-          // Position and show tooltip - use clientX and clientY for viewport-relative positioning
-          tooltipX.value = event.clientX + 10
-          tooltipY.value = event.clientY - 28
-          tooltipVisible.value = true
+          // Show tooltip using the global tooltip system
+          showTooltipAt(
+            event.clientX + 10, 
+            event.clientY - 28, 
+            tooltipContent,
+            true // isChart = true
+          );
         })
         .on('mousemove', function(event) {
-          // Update tooltip position using client coordinates (viewport-relative)
-          tooltipX.value = event.clientX + 10
-          tooltipY.value = event.clientY - 28
+          // Update tooltip position with the same content
+          const d = d3.select(this).datum();
+          const date = new Date(d.timestamp);
+          
+          // Format content for tooltip
+          const tooltipContent = `<div class="tooltip-header">
+              ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+            </div>
+            <div class="tooltip-content">
+              ${props.metric}: <strong>${d.value.toFixed(2)} ${props.unit}</strong>
+            </div>`;
+          
+          // Update tooltip position
+          showTooltipAt(
+            event.clientX + 10, 
+            event.clientY - 28, 
+            tooltipContent,
+            true // isChart = true
+          );
         })
         .on('mouseout', function() {
           // Reset bar style
@@ -248,7 +250,7 @@ export default {
             .attr('stroke', 'none')
           
           // Hide tooltip
-          tooltipVisible.value = false
+          hideTooltip();
         })
     }
     
@@ -267,11 +269,7 @@ export default {
     watch(() => [props.data, props.selectedHours], drawChart, { deep: true })
     
     return {
-      chartContainer,
-      tooltipVisible,
-      tooltipX,
-      tooltipY,
-      tooltipData
+      chartContainer
     }
   }
 }
@@ -316,4 +314,6 @@ export default {
 .dark-theme :deep(.bar) {
   opacity: 0.9; /* Increased opacity for dark mode */
 }
+
+/* Moved tooltip styles to Tooltip.vue */
 </style>

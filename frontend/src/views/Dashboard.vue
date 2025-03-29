@@ -1,5 +1,8 @@
 <template>
   <div class="dashboard">
+    <!-- Global tooltip component -->
+    <Tooltip ref="tooltipRef" />
+    
     <div class="header">
       <h2>Network Status Dashboard</h2>
       <nav-menu @refresh="refreshData" />
@@ -85,7 +88,7 @@
               }"
               class="time-btn"
               :disabled="!hasEnoughDataForTimeRange(option.hours)"
-              :title="!hasEnoughDataForTimeRange(option.hours) ? 'Not enough data available for this time range' : ''"
+              :ref="el => initButtonTooltip(el, option.hours)"
             >
               {{ option.label }}
             </button>
@@ -143,11 +146,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useStore } from "vuex";
 import NetworkMetricChart from "../components/NetworkMetricChart.vue";
 import NavMenu from "../components/NavMenu.vue";
 import NetworkMetric from "../components/NetworkMetric.vue";
+import Tooltip from "../components/Tooltip.vue";
+import { useTooltip } from "../composables/useTooltip.js";
 
 export default {
   name: "Dashboard",
@@ -155,11 +160,16 @@ export default {
     NetworkMetricChart,
     NavMenu,
     NetworkMetric,
+    Tooltip
   },
   setup() {
     const store = useStore();
     const refreshInterval = ref(null);
     const selectedHours = ref(3);
+    
+    // Initialize tooltip system
+    const tooltipRef = ref(null);
+    const { attachDisabledTooltip, register } = useTooltip();
 
     const timeOptions = [
       { label: "3 Hours", hours: 3 },
@@ -169,9 +179,27 @@ export default {
       { label: "7 Days", hours: 168 },
     ];
 
+    // Function to initialize tooltips for time filter buttons
+    const initButtonTooltip = (element, hours) => {
+      if (!element) return;
+      
+      // Add tooltip to all buttons, but it will only show when they're disabled
+      attachDisabledTooltip(element, 'Not enough data available for this time range');
+      
+      // Return the button element for Vue's ref handling
+      return element;
+    };
+    
     // Fetch data on component mount
     onMounted(() => {
       fetchData();
+      
+      // Register the tooltip ref with the tooltip system after it's mounted
+      nextTick(() => {
+        if (tooltipRef.value) {
+          register(tooltipRef.value);
+        }
+      });
 
       // Auto-refresh every minute
       refreshInterval.value = setInterval(() => {
@@ -296,7 +324,10 @@ export default {
       refreshData,
       formatDate,
       hasEnoughDataForTimeRange,
-      store
+      store,
+      // Tooltip related
+      tooltipRef,
+      initButtonTooltip
     };
   },
 };
