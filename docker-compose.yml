@@ -10,8 +10,9 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-netmon}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-netmon}
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
+      - PGDATABASE=${POSTGRES_DB:-network_tests}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netmon}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netmon} -d ${POSTGRES_DB:-network_tests}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,6 +37,7 @@ services:
       # Make sure this matches the database name created by the db service
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
+      - PGDATABASE=${POSTGRES_DB:-network_tests}
       - FLASK_CONFIG=production
       - SECRET_KEY=${SECRET_KEY:-change_this_in_production}
     restart: unless-stopped
@@ -55,6 +57,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
+      - PGDATABASE=${POSTGRES_DB:-network_tests}
     volumes:
       - ./docker:/app/docker
     # Using a simple shell script for initialization
@@ -77,6 +80,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
+      - PGDATABASE=${POSTGRES_DB:-network_tests}
       - TEST_TARGET=${TEST_TARGET:-1.1.1.1}
       - TEST_COUNT=${TEST_COUNT:-100}
       - TEST_INTERVAL=${TEST_INTERVAL:-0.1}

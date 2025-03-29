@@ -13,7 +13,11 @@ try:
     with app.app_context():
         print("Creating database tables...")
         db.create_all()
-        print(f"Created tables: {db.engine.table_names()}")
+        
+        # SQLAlchemy 2.x compatible way to get table names
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        print(f"Created tables: {inspector.get_table_names(schema=app.config.get('POSTGRES_SCHEMA', 'network_eval'))}")
         print("Database initialization successful!")
 except Exception as e:
     print(f"Database initialization error: {str(e)}", file=sys.stderr)
