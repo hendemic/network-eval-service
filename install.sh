@@ -107,19 +107,55 @@ if [ -f "$INSTALL_DIR/.env" ]; then
     read -p "Press Enter after you have updated the configuration..."
   fi
 else
-  cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+  # Check if .env.example exists
+  if [ ! -f "$INSTALL_DIR/.env.example" ]; then
+    echo -e "${YELLOW}Creating default .env file since .env.example doesn't exist${NC}"
+    cat > "$INSTALL_DIR/.env" << EOF
+# Database configuration
+POSTGRES_USER=netmon
+POSTGRES_PASSWORD=netmon_password
+POSTGRES_DB=network_tests
+POSTGRES_SCHEMA=network_eval
+
+# Application configuration
+SECRET_KEY=dev-key-change-in-production
+FLASK_CONFIG=production
+
+# Web server port
+WEB_PORT=5000
+
+# Network test configuration
+TEST_TARGET=1.1.1.1
+TEST_COUNT=100
+TEST_INTERVAL=0.1
+EOF
+  else
+    cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+  fi
+  
   # Generate a secure random password and secret key
   RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -d "=+/")
   RANDOM_SECRET=$(openssl rand -hex 24)
   
   # Update the password and secret key in .env file
-  sed -i "s/POSTGRES_PASSWORD=change_this_in_production/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env"
-  sed -i "s/SECRET_KEY=change_this_in_production/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env"
+  sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env"
+  sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env"
   
   echo -e "${YELLOW}Environment file created with secure random credentials.${NC}"
   echo -e "${YELLOW}Please review and edit if needed:${NC}"
   echo -e "${YELLOW}  sudo nano $INSTALL_DIR/.env${NC}"
   read -p "Press Enter after you have reviewed the configuration..."
+fi
+
+# Make sure the .env file has all required variables
+if ! grep -q "POSTGRES_USER" "$INSTALL_DIR/.env"; then
+  echo "POSTGRES_USER=netmon" >> "$INSTALL_DIR/.env"
+fi
+if ! grep -q "POSTGRES_DB" "$INSTALL_DIR/.env"; then
+  echo "POSTGRES_DB=network_tests" >> "$INSTALL_DIR/.env"
+fi
+if ! grep -q "POSTGRES_SCHEMA" "$INSTALL_DIR/.env"; then
+  echo "POSTGRES_SCHEMA=network_eval" >> "$INSTALL_DIR/.env"
 fi
 
 # Make the env file readable only by root

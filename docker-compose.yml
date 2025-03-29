@@ -55,22 +55,19 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
     command: >
-      python -c "
-      import sys
-      from backend.models import db, PingResult
-      from backend.app import create_app
+      python -c "import sys, time; from backend.models import db, PingResult; from backend.app import create_app;
+      print('Starting database initialization...');
+      time.sleep(3);
       try:
-          app = create_app()
+          app = create_app();
           with app.app_context():
-              print('Creating database tables...')
-              db.create_all()
-              print(f'Created tables: {db.engine.table_names()}')
-              print('Database initialization successful!')
-              if PingResult.query.count() == 0:
-                  print('Warning: No data in PingResult table. Test container will populate it.')
+              print('Creating database tables...');
+              db.create_all();
+              print(f'Created tables: {db.engine.table_names()}');
+              print('Database initialization successful!');
       except Exception as e:
-          print(f'Database initialization error: {str(e)}', file=sys.stderr)
-          sys.exit(1)
+          print(f'Database initialization error: {str(e)}', file=sys.stderr);
+          sys.exit(1);
       "
     restart: "no"
 
