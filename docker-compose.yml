@@ -84,6 +84,7 @@ services:
       - TEST_TARGET=${TEST_TARGET:-1.1.1.1}
       - TEST_COUNT=${TEST_COUNT:-100}
       - TEST_INTERVAL=${TEST_INTERVAL:-0.1}
+      - TEST_INTERVAL_SECONDS=${TEST_INTERVAL_SECONDS:-60}
     restart: unless-stopped
 
 volumes:

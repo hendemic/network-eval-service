@@ -53,5 +53,10 @@ def run_network_test():
             db.session.rollback()
             print(f"Error saving results: {str(e)}")
 
-if __name__ == '__main__':
+def main():
+    """Main entry point for the script"""
     run_network_test()
+    return True
+
+if __name__ == '__main__':
+    main()
