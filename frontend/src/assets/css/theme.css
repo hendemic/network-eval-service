@@ -30,6 +30,7 @@
   --metric-value-color: #444444;     /* Dark grey for metric values in light mode */
   --filter-inactive-color: #555555;  /* Dark grey for inactive filter buttons in light mode */
   --nav-active-color: var(--brand-primary); /* Active navigation item color in light mode */
+  --chart-highlight-stroke: #333333; /* Stroke color for highlighted chart elements */
   
   /* Border Colors */
   --border-light: #dddddd;
@@ -112,9 +113,15 @@
   --nav-active-color: var(--text-white); /* White for active navigation item in dark mode */
   --table-header-bg: #161b22;        /* Dark background for table headers */
   --table-hover-bg: #1f2937;         /* Dark background for table row hover */
+  --chart-highlight-stroke: #e0e0e0; /* Light stroke color for highlighted chart elements */
   
   /* Ensure all text is visible in dark mode */
   --brand-primary: #4a6b8a; /* Lighter version for better contrast */
+  
+  /* Chart Colors - lighter shades for dark mode */
+  --chart-latency: #60a5fa;    /* Light blue */
+  --chart-jitter: #c084fc;     /* Light purple */
+  --chart-packet-loss: #f87171; /* Light red */
   
   /* Border Colors */
   --border-light: #34495e;

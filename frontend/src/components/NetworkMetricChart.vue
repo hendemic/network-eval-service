@@ -213,11 +213,12 @@ export default {
         .attr('fill', getChartColor())
         .attr('opacity', 0.8)
         .attr('rx', 1)
+        .attr('stroke', 'none') // No stroke by default
         .on('mouseover', function(event, d) {
           // Highlight the bar
           d3.select(this)
             .attr('opacity', 1)
-            .attr('stroke', '#333')
+            .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--chart-highlight-stroke'))
             .attr('stroke-width', 1)
           
           // Make sure we have a valid timestamp
@@ -305,5 +306,14 @@ export default {
 :deep(.x-axis path),
 :deep(.y-axis path) {
   stroke: var(--border-light);
+}
+
+/* Enhance contrast for bars in dark mode */
+:deep(.bar) {
+  opacity: 0.8;
+}
+
+.dark-theme :deep(.bar) {
+  opacity: 0.9; /* Increased opacity for dark mode */
 }
 </style>
