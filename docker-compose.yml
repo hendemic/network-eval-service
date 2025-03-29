@@ -56,26 +56,31 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - POSTGRES_SCHEMA=${POSTGRES_SCHEMA:-network_eval}
     # Create a more robust initialization script
-    command: >
-      bash -c 'echo "Waiting for database to be fully ready..."
+    command: |
+      #!/bin/bash
+      set -e
+      
+      echo "Waiting for database to be fully ready..."
       sleep 5
       echo "Starting database initialization..."
       
-      # First run the diagnostic script
-      python -c "
-import sys, os, time
+      # Create the diagnostic script
+      cat > /tmp/check_db.py << 'EOL'
+import sys
+import os
+import time
 import sqlalchemy as sa
 from sqlalchemy.exc import OperationalError
 
 # Get database details
-db_user = os.environ.get(\"POSTGRES_USER\", \"netmon\")
-db_pass = os.environ.get(\"POSTGRES_PASSWORD\", \"netmon\")
-db_host = os.environ.get(\"POSTGRES_HOST\", \"db\")
-db_port = os.environ.get(\"POSTGRES_PORT\", \"5432\")
-db_name = os.environ.get(\"POSTGRES_DB\", \"network_tests\")
+db_user = os.environ.get("POSTGRES_USER", "netmon")
+db_pass = os.environ.get("POSTGRES_PASSWORD", "netmon")
+db_host = os.environ.get("POSTGRES_HOST", "db")
+db_port = os.environ.get("POSTGRES_PORT", "5432")
+db_name = os.environ.get("POSTGRES_DB", "network_tests")
 
-print(f\"Checking connection to {db_host}:{db_port}/{db_name} as {db_user}\")
-db_url = f\"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}\"
+print(f"Checking connection to {db_host}:{db_port}/{db_name} as {db_user}")
+db_url = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
 # Try to connect
 max_retries = 5
@@ -85,36 +90,40 @@ for attempt in range(max_retries):
     try:
         engine = sa.create_engine(db_url)
         with engine.connect() as conn:
-            result = conn.execute(sa.text(\"SELECT 1\")).scalar()
-            print(f\"Connection successful! Result: {result}\")
+            result = conn.execute(sa.text("SELECT 1")).scalar()
+            print(f"Connection successful! Result: {result}")
             break
     except OperationalError as e:
-        print(f\"Attempt {attempt+1}/{max_retries} failed: {str(e)}\")
+        print(f"Attempt {attempt+1}/{max_retries} failed: {str(e)}")
         if attempt < max_retries - 1:
-            print(f\"Retrying in {retry_delay} seconds...\")
+            print(f"Retrying in {retry_delay} seconds...")
             time.sleep(retry_delay)
         else:
-            print(\"All connection attempts failed\")
+            print("All connection attempts failed")
             sys.exit(1)
-"
+EOL
 
-      # Then run the actual initialization
-      python -c "
-import sys, os
+      # Create the initialization script
+      cat > /tmp/init_db.py << 'EOL'
+import sys
+import os
 from backend.models import db, PingResult
 from backend.app import create_app
 
 try:
     app = create_app()
     with app.app_context():
-        print(\"Creating database tables...\")
+        print("Creating database tables...")
         db.create_all()
-        print(f\"Created tables: {db.engine.table_names()}\")
-        print(\"Database initialization successful!\")
+        print(f"Created tables: {db.engine.table_names()}")
+        print("Database initialization successful!")
 except Exception as e:
-    print(f\"Database initialization error: {str(e)}\", file=sys.stderr)
+    print(f"Database initialization error: {str(e)}", file=sys.stderr)
     sys.exit(1)
-"'
+EOL
+
+      # Run the scripts
+      python /tmp/check_db.py && python /tmp/init_db.py
     restart: "no"
 
   test:
