@@ -4,12 +4,43 @@ import axios from 'axios'
 // API base URL
 const API_URL = process.env.VUE_APP_API_URL || '/api'
 
+// Theme functions
+const getThemeFromLocalStorage = () => {
+  // Check if user has a saved preference
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark' || savedTheme === 'light') {
+    return savedTheme
+  }
+  
+  // If no preference, check system preference
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark'
+  }
+  
+  // Default to light theme
+  return 'light'
+}
+
+const setThemeInLocalStorage = (theme) => {
+  localStorage.setItem('theme', theme)
+}
+
+const applyTheme = (theme) => {
+  // Add or remove dark-theme class from html element
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark-theme')
+  } else {
+    document.documentElement.classList.remove('dark-theme')
+  }
+}
+
 export default createStore({
   state: {
     pingResults: [],
     stats: null,
     loading: false,
-    error: null
+    error: null,
+    theme: getThemeFromLocalStorage()
   },
   getters: {
     latencyData(state) {
@@ -29,6 +60,12 @@ export default createStore({
         timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
         value: result.packet_loss
       })).sort((a, b) => a.timestamp - b.timestamp)
+    },
+    currentTheme(state) {
+      return state.theme
+    },
+    isDarkMode(state) {
+      return state.theme === 'dark'
     }
   },
   mutations: {
@@ -43,6 +80,9 @@ export default createStore({
     },
     SET_ERROR(state, error) {
       state.error = error
+    },
+    SET_THEME(state, theme) {
+      state.theme = theme
     }
   },
   actions: {
@@ -70,6 +110,44 @@ export default createStore({
         console.error('Error fetching network stats:', error)
       } finally {
         commit('SET_LOADING', false)
+      }
+    },
+    
+    setTheme({ commit }, theme) {
+      // Update store
+      commit('SET_THEME', theme)
+      
+      // Save to localStorage
+      setThemeInLocalStorage(theme)
+      
+      // Apply the theme to the DOM
+      applyTheme(theme)
+    },
+    
+    initTheme({ state, dispatch }) {
+      // Apply the current theme from state
+      dispatch('setTheme', state.theme)
+      
+      // Add listener for system preference changes
+      if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        
+        // Define handler function
+        const handleThemeChange = (e) => {
+          // Only apply if user hasn't set a preference manually
+          if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light'
+            dispatch('setTheme', newTheme)
+          }
+        }
+        
+        // Add listener (with compatibility for older browsers)
+        if (mediaQuery.addEventListener) {
+          mediaQuery.addEventListener('change', handleThemeChange)
+        } else if (mediaQuery.addListener) {
+          // Older implementation
+          mediaQuery.addListener(handleThemeChange)
+        }
       }
     }
   }

@@ -228,7 +228,7 @@ export default {
   color: #666;
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
+  /* No transition */
 }
 
 .nav-item:hover {
@@ -250,7 +250,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.2s;
+  /* No transition */
 }
 
 .refresh-text {
@@ -341,16 +341,17 @@ export default {
 
 .page-size-btn {
   padding: 0.5rem 1rem;
-  background-color: #f1f1f1;
+  background-color: var(--bg-light);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
+  color: var(--filter-inactive-color);
 }
 
 .page-size-btn.active {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--brand-primary);
+  color: var(--text-white);
 }
 
 .page-size-controls {
@@ -360,8 +361,8 @@ export default {
 }
 
 .control-label {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 
 .chart-card {
@@ -370,14 +371,14 @@ export default {
 
 .loading, .error {
   text-align: center;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: var(--space-xl);
+  background: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 .error {
-  color: #d9534f;
+  color: var(--brand-danger);
 }
 
 .data-table {
@@ -389,16 +390,27 @@ export default {
 .data-table th, .data-table td {
   text-align: left;
   padding: 0.75rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .data-table th {
-  font-weight: bold;
-  background-color: #f8f9fa;
+  font-weight: var(--font-weight-bold);
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+}
+
+/* Override for dark mode */
+.dark-theme .data-table th {
+  background-color: var(--table-header-bg);
 }
 
 .data-table tr:hover {
-  background-color: #f1f1f1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Override for dark mode */
+.dark-theme .data-table tr:hover {
+  background-color: var(--table-hover-bg);
 }
 
 .pagination-controls {
@@ -411,8 +423,8 @@ export default {
 }
 
 .page-info {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 
 .page-buttons {
@@ -423,10 +435,11 @@ export default {
 
 .pagination-btn {
   padding: 0.4rem 0.8rem;
-  background-color: #f1f1f1;
+  background-color: var(--bg-light);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
+  color: var(--filter-inactive-color);
 }
 
 .pagination-btn:disabled {
@@ -435,12 +448,13 @@ export default {
 }
 
 .pagination-btn:not(:disabled):hover {
-  background-color: #e1e1e1;
+  background-color: var(--table-header-bg);
 }
 
 .page-indicator {
   padding: 0 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 
 </style>

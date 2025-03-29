@@ -3,8 +3,8 @@
  * Contains base styles and utility classes
  */
 
-/* Import brand variables */
-@import './brand.css';
+/* Import theme variables */
+@import './theme.css';
 
 /* Box-sizing reset */
 *,
@@ -30,6 +30,11 @@ body {
   background-color: var(--bg-light);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark theme background override */
+.dark-theme body {
+  background-color: var(--bg-dark);
 }
 
 /* Typography */
@@ -59,7 +64,7 @@ p {
 a {
   color: var(--brand-accent);
   text-decoration: none;
-  transition: color var(--transition-quick);
+  /* No transition */
 }
 
 a:hover {
@@ -78,7 +83,7 @@ button, .btn {
   font-size: var(--font-size-md);
   line-height: 1.5;
   border-radius: var(--border-radius-sm);
-  transition: all var(--transition-quick);
+  /* No transition */
   cursor: pointer;
 }
 

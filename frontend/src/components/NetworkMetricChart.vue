@@ -154,31 +154,35 @@ export default {
       };
       
       // Draw X-axis with configured ticks and format
-      svg.append('g')
+      const xAxis = svg.append('g')
+        .attr('class', 'x-axis')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale)
           .ticks(xAxisTicks)
           .tickFormat(timeFormat)
           .tickSizeOuter(0)
-        )
-        .selectAll('text')
-          .style('text-anchor', 'end')
-          .attr('dy', '0.5em')
-          .attr('dx', '-0.3em')
-          .attr('transform', 'rotate(-20)');
+        );
+      
+      // Style X-axis text
+      xAxis.selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dy', '0.5em')
+        .attr('dx', '-0.3em')
+        .attr('transform', 'rotate(-20)');
       
       // Draw Y-axis
       svg.append('g')
+        .attr('class', 'y-axis')
         .call(d3.axisLeft(yScale))
       
       // Add Y axis label
       svg.append('text')
+        .attr('class', 'axis-label')
         .attr('transform', 'rotate(-90)')
         .attr('y', 0 - margin.left)
         .attr('x', 0 - (height / 2))
         .attr('dy', '1em')
         .style('text-anchor', 'middle')
-        .style('fill', '#666')
         .text(`${props.metric} (${props.unit})`)
       
       // Filter data to the selected time range
@@ -291,5 +295,15 @@ export default {
 :deep(.tick text) {
   font-size: var(--font-size-xs);
   fill: var(--text-secondary);
+}
+
+:deep(.axis-label) {
+  fill: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+:deep(.x-axis path),
+:deep(.y-axis path) {
+  stroke: var(--border-light);
 }
 </style>

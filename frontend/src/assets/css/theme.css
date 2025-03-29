@@ -1,8 +1,11 @@
 /**
- * Network Evaluation Service - Brand Stylesheet
- * Contains all global design variables for consistent styling
+ * Network Evaluation Service - Theme Variables
+ * Contains theme variables for both light and dark modes
  */
 
+/* No transitions for immediate theme switching */
+
+/* Base theme (light mode) */
 :root {
   /* Color Palette */
   --brand-primary: #2c3e50;
@@ -22,6 +25,11 @@
   --text-secondary: #666666;
   --text-light: #999999;
   --text-white: #ffffff;
+  
+  /* Component-specific colors */
+  --metric-value-color: #444444;     /* Dark grey for metric values in light mode */
+  --filter-inactive-color: #555555;  /* Dark grey for inactive filter buttons in light mode */
+  --nav-active-color: var(--brand-primary); /* Active navigation item color in light mode */
   
   /* Border Colors */
   --border-light: #dddddd;
@@ -76,4 +84,45 @@
   --transition-quick: 0.2s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
+}
+
+/* Dark theme overrides - applied when .dark-theme class is added to body or html */
+.dark-theme {
+  /* Color Palette */
+  --brand-primary: #34495e;
+  --brand-secondary: #2ecc71;
+  --brand-accent: #3498db;
+  --brand-warning: #f39c12;
+  --brand-danger: #e74c3c;
+  --brand-success: #27ae60;
+  
+  /* Backgrounds */
+  --bg-light: #0d1117;    /* Darker shade for elements */
+  --bg-white: #0d1117;    /* Background for cards */
+  --bg-dark: #010409;     /* Main background color */
+  
+  /* Text Colors */
+  --text-primary: #ecf0f1;
+  --text-secondary: #bdc3c7;
+  --text-light: #95a5a6;
+  
+  /* Component-specific colors */
+  --metric-value-color: #e0e0e0;     /* Light grey for metric values in dark mode */
+  --filter-inactive-color: #a0a0a0;  /* Medium grey for inactive filter buttons in dark mode */
+  --nav-active-color: var(--text-white); /* White for active navigation item in dark mode */
+  --table-header-bg: #161b22;        /* Dark background for table headers */
+  --table-hover-bg: #1f2937;         /* Dark background for table row hover */
+  
+  /* Ensure all text is visible in dark mode */
+  --brand-primary: #4a6b8a; /* Lighter version for better contrast */
+  
+  /* Border Colors */
+  --border-light: #34495e;
+  --border-medium: #2c3e50;
+  --border-dark: #1a2635;
+  
+  /* Shadows - darker for dark mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
 }

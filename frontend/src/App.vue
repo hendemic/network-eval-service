@@ -11,7 +11,11 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  mounted() {
+    // Set the document title
+    document.title = 'NES';
+  }
 }
 </script>
 

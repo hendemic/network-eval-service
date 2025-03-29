@@ -19,6 +19,9 @@
         </svg>
         <span class="refresh-text">Refresh</span>
       </button>
+      
+      <!-- Theme toggle button -->
+      <theme-toggle />
     </div>
   </div>
 </template>
@@ -26,10 +29,14 @@
 <script>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import ThemeToggle from './ThemeToggle.vue'
 
 export default {
   name: 'NavMenu',
   emits: ['refresh'],
+  components: {
+    ThemeToggle
+  },
   setup(props, { emit }) {
     const menuExpanded = ref(false)
     const route = useRoute()
@@ -87,7 +94,7 @@ export default {
   color: var(--text-secondary);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--border-radius-sm);
-  transition: background-color var(--transition-quick), color var(--transition-quick);
+  /* No transition */
 }
 
 .nav-item:hover {
@@ -95,7 +102,7 @@ export default {
 }
 
 .nav-item.active {
-  color: var(--brand-primary);
+  color: var(--nav-active-color);
   font-weight: var(--font-weight-bold);
 }
 
@@ -143,7 +150,7 @@ export default {
     height: 3px;
     background-color: var(--text-secondary);
     border-radius: 3px;
-    transition: all var(--transition-medium);
+    /* No transition */
   }
   
   /* Position the lines */
@@ -190,7 +197,7 @@ export default {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all var(--transition-medium);
+    /* No transition */
   }
   
   .nav-menu-expanded {

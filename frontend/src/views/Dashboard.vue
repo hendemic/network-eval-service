@@ -381,6 +381,7 @@ export default {
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
+  color: var(--filter-inactive-color);
 }
 
 .time-btn.active {

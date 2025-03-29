@@ -3,10 +3,16 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
-// Import global CSS
+// Import CSS
 import './assets/css/base.css'
 
-createApp(App)
+// Create the Vue app instance
+const app = createApp(App)
   .use(store)
   .use(router)
-  .mount('#app')
+
+// Initialize the theme before mounting the app
+store.dispatch('initTheme')
+
+// Mount the app
+app.mount('#app')

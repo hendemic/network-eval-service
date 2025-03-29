@@ -42,7 +42,7 @@ export default {
   font-size: var(--font-size-xs);
   pointer-events: none;
   z-index: 9999;
-  transition: opacity var(--transition-quick);
+  /* No transition */
   max-width: 200px;
   box-shadow: var(--shadow-sm);
 }
