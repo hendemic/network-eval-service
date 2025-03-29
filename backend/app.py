@@ -28,7 +28,14 @@ def create_app(config_name='default'):
         limit = request.args.get('limit', default=1000, type=int)
         
         # Calculate time filter
-        time_filter = datetime.utcnow() - timedelta(hours=hours)
+        now = datetime.utcnow()
+        
+        # Round to the nearest hour to get consistent charts starting on even hours
+        rounded_now = now.replace(minute=0, second=0, microsecond=0)
+        if now.minute >= 30:  # If we're past half an hour, round up to the next hour
+            rounded_now = rounded_now + timedelta(hours=1)
+            
+        time_filter = rounded_now - timedelta(hours=hours)
         
         # Query database
         results = PingResult.query.filter(
@@ -51,8 +58,13 @@ def create_app(config_name='default'):
                 'message': 'No ping results available'
             }), 404
         
-        # Calculate 24-hour statistics
-        day_ago = datetime.utcnow() - timedelta(hours=24)
+        # Calculate 24-hour statistics using same rounding approach
+        now = datetime.utcnow()
+        rounded_now = now.replace(minute=0, second=0, microsecond=0)
+        if now.minute >= 30:
+            rounded_now = rounded_now + timedelta(hours=1)
+        
+        day_ago = rounded_now - timedelta(hours=24)
         
         # Get statistical values for the last 24 hours
         day_stats = db.session.query(

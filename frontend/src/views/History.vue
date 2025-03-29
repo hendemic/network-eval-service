@@ -1,6 +1,9 @@
 <template>
   <div class="history">
-    <h2>Network Test History</h2>
+    <div class="header">
+      <h2>Network Test History</h2>
+      <nav-menu @refresh="refreshData" />
+    </div>
     
     <div class="controls">
       <div class="page-size-controls">
@@ -79,20 +82,18 @@
       </div>
     </div>
     
-    <div class="actions">
-      <router-link to="/" class="btn">Back to Dashboard</router-link>
-      <button @click="refreshData" class="btn">Refresh Data</button>
-    </div>
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import NavMenu from '../components/NavMenu.vue'
 
 export default {
   name: 'History',
   components: {
+    NavMenu,
   },
   setup() {
     const store = useStore()
@@ -191,6 +192,147 @@ export default {
 <style scoped>
 .history {
   width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.nav-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: #666;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #f1f1f1;
+}
+
+.nav-item.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.refresh-text {
+  display: none;
+}
+
+.refresh-btn:hover {
+  background-color: #f1f1f1;
+  color: var(--primary-color);
+}
+
+/* Mobile responsive styling */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .nav-container {
+    position: relative;
+  }
+  
+  .menu-toggle {
+    display: block;
+  }
+  
+  /* X icon for close state */
+  .menu-toggle svg line:nth-child(1) {
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+  
+  .menu-toggle svg line:nth-child(2) {
+    transition: opacity 0.2s ease;
+  }
+  
+  .menu-toggle svg line:nth-child(3) {
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+  
+  /* Hamburger to X animation */
+  .menu-toggle.active svg line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  
+  .menu-toggle.active svg line:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .menu-toggle.active svg line:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+  
+  .nav-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 66%;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    z-index: 10;
+    margin-top: 0.5rem;
+  }
+  
+  .nav-menu-expanded {
+    display: flex;
+  }
+  
+  .refresh-text {
+    display: inline;
+  }
+  
+  .refresh-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .controls {
@@ -301,26 +443,4 @@ export default {
   font-size: 0.9rem;
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.btn {
-  display: inline-block;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 1rem;
-}
-
-.btn:hover {
-  background-color: #1a2530;
-}
 </style>

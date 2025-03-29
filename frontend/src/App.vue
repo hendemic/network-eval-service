@@ -1,8 +1,5 @@
 <template>
   <div id="app">
-    <header>
-      <h1>Network Performance Monitor</h1>
-    </header>
     <main>
       <router-view />
     </main>
@@ -59,7 +56,7 @@ main {
   flex: 1;
   padding: 2rem;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 2rem auto 0;
   width: 100%;
 }
 

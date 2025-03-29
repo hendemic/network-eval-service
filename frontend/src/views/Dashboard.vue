@@ -1,79 +1,75 @@
 <template>
   <div class="dashboard">
-    <h2>Network Status Dashboard</h2>
-    
-    <div v-if="loading" class="loading">
-      Loading...
+    <div class="header">
+      <h2>Network Status Dashboard</h2>
+      <nav-menu @refresh="refreshData" />
     </div>
-    
+
+    <div v-if="loading" class="loading">Loading...</div>
+
     <div v-else-if="error" class="error">
       {{ error }}
     </div>
-    
+
     <div v-else-if="stats">
       <!-- Latest stats section -->
       <div class="card stats-overview">
         <h3>Current Network Status</h3>
-        <p class="last-updated">Last updated: {{ formatDate(stats.latest.timestamp) }}</p>
-        
+        <p class="last-updated">
+          Last updated: {{ formatDate(stats.latest.timestamp) }}
+        </p>
+
         <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value" :class="getLatencyClass(stats.latest.avg_latency)">
-              {{ stats.latest.avg_latency.toFixed(2) }} ms
-            </div>
-            <div class="stat-label">Average Latency</div>
-          </div>
+          <network-metric
+            :value="stats.latest.avg_latency"
+            metric-type="latency"
+            label="Average Latency"
+          />
           
-          <div class="stat-item">
-            <div class="stat-value" :class="getJitterClass(stats.latest.jitter)">
-              {{ stats.latest.jitter.toFixed(2) }} ms
-            </div>
-            <div class="stat-label">Jitter</div>
-          </div>
+          <network-metric
+            :value="stats.latest.jitter"
+            metric-type="jitter"
+            label="Jitter"
+          />
           
-          <div class="stat-item">
-            <div class="stat-value" :class="getPacketLossClass(stats.latest.packet_loss)">
-              {{ stats.latest.packet_loss.toFixed(2) }}%
-            </div>
-            <div class="stat-label">Packet Loss</div>
-          </div>
+          <network-metric
+            :value="stats.latest.packet_loss"
+            metric-type="packetLoss"
+            label="Packet Loss"
+          />
         </div>
       </div>
-      
+
       <!-- 24 hour overview -->
       <div class="card">
         <h3>24 Hour Overview</h3>
         <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value" :class="getLatencyClass(stats.day_stats.avg_latency)">
-              {{ stats.day_stats.avg_latency.toFixed(2) }} ms
-            </div>
-            <div class="stat-label">Avg Latency (24h)</div>
-          </div>
+          <network-metric
+            :value="stats.day_stats.avg_latency"
+            metric-type="latency"
+            label="Avg Latency (24h)"
+          />
           
-          <div class="stat-item">
-            <div class="stat-value" :class="getJitterClass(stats.day_stats.avg_jitter)">
-              {{ stats.day_stats.avg_jitter.toFixed(2) }} ms
-            </div>
-            <div class="stat-label">Avg Jitter (24h)</div>
-          </div>
+          <network-metric
+            :value="stats.day_stats.avg_jitter"
+            metric-type="jitter"
+            label="Avg Jitter (24h)"
+          />
           
-          <div class="stat-item">
-            <div class="stat-value">
-              {{ stats.day_stats.max_latency.toFixed(2) }} ms
-            </div>
-            <div class="stat-label">Max Latency (24h)</div>
-          </div>
+          <network-metric
+            :value="stats.day_stats.max_latency"
+            metric-type="latency"
+            label="Max Latency (24h)"
+          />
           
-          <div class="stat-item">
-            <div class="stat-value" :class="getPacketLossClass(stats.day_stats.max_packet_loss)">
-              {{ stats.day_stats.max_packet_loss.toFixed(2) }}%
-            </div>
-            <div class="stat-label">Max Packet Loss (24h)</div>
-          </div>
+          <network-metric
+            :value="stats.day_stats.max_packet_loss"
+            metric-type="packetLoss"
+            label="Max Packet Loss (24h)"
+          />
         </div>
       </div>
-      
+
       <!-- Network Performance Charts -->
       <div class="card performance-section">
         <div class="section-header">
@@ -83,193 +79,236 @@
               v-for="(option, index) in timeOptions"
               :key="index"
               @click="setTimeRange(option.hours)"
-              :class="{ active: selectedHours === option.hours }"
+              :class="{ 
+                active: selectedHours === option.hours,
+                disabled: !hasEnoughDataForTimeRange(option.hours)
+              }"
               class="time-btn"
+              :disabled="!hasEnoughDataForTimeRange(option.hours)"
+              :title="!hasEnoughDataForTimeRange(option.hours) ? 'Not enough data available for this time range' : ''"
             >
               {{ option.label }}
             </button>
           </div>
         </div>
-        
+
         <!-- Latency Chart -->
         <div class="chart-card">
           <h4>Network Latency</h4>
-          <line-chart 
-            v-if="chartData && chartData.length > 0"
-            :chart-data="chartData" 
-            :chart-labels="chartLabels"
+          <network-metric-chart
+            v-if="latencyData && latencyData.length > 0"
+            :data="latencyData"
+            metric="Latency"
+            unit="ms"
+            color="#42b983"
+            :minYScale="50"
+            :selectedHours="selectedHours"
           />
           <p v-else>Not enough data to display chart</p>
         </div>
-        
+
         <!-- Network Jitter Chart -->
         <div class="chart-card">
           <h4>Network Jitter</h4>
-          <network-chart 
+          <network-metric-chart
             v-if="jitterData && jitterData.length > 0"
             :data="jitterData"
             metric="Jitter"
             unit="ms"
             color="#2c3e50"
+            :minYScale="10"
+            :selectedHours="selectedHours"
           />
           <p v-else>Not enough data to display chart</p>
         </div>
-        
+
         <!-- Packet Loss Chart -->
         <div class="chart-card">
           <h4>Packet Loss</h4>
-          <network-chart 
+          <network-metric-chart
             v-if="packetLossData && packetLossData.length > 0"
             :data="packetLossData"
             metric="Packet Loss"
             unit="%"
             color="#e74c3c"
+            :minYScale="5"
+            :selectedHours="selectedHours"
           />
           <p v-else>Not enough data to display chart</p>
         </div>
       </div>
     </div>
-    
+
     <div v-else class="no-data">
       No data available. Ensure the network tests are running.
-    </div>
-    
-    <div class="actions">
-      <router-link to="/history" class="btn">View Full History</router-link>
-      <button @click="refreshData" class="btn">Refresh Data</button>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useStore } from 'vuex'
-import LineChart from '../components/LineChart.vue'
-import NetworkChart from '../components/NetworkChart.vue'
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useStore } from "vuex";
+import NetworkMetricChart from "../components/NetworkMetricChart.vue";
+import NavMenu from "../components/NavMenu.vue";
+import NetworkMetric from "../components/NetworkMetric.vue";
 
 export default {
-  name: 'Dashboard',
+  name: "Dashboard",
   components: {
-    LineChart,
-    NetworkChart
+    NetworkMetricChart,
+    NavMenu,
+    NetworkMetric,
   },
   setup() {
-    const store = useStore()
-    const refreshInterval = ref(null)
-    const selectedHours = ref(3)
-    
+    const store = useStore();
+    const refreshInterval = ref(null);
+    const selectedHours = ref(3);
+
     const timeOptions = [
-      { label: '3 Hours', hours: 3 },
-      { label: '12 Hours', hours: 12 },
-      { label: '24 Hours', hours: 24 },
-      { label: '3 Days', hours: 72 },
-      { label: '7 Days', hours: 168 }
-    ]
-    
+      { label: "3 Hours", hours: 3 },
+      { label: "12 Hours", hours: 12 },
+      { label: "24 Hours", hours: 24 },
+      { label: "3 Days", hours: 72 },
+      { label: "7 Days", hours: 168 },
+    ];
+
     // Fetch data on component mount
     onMounted(() => {
-      fetchData()
-      
+      fetchData();
+
       // Auto-refresh every minute
       refreshInterval.value = setInterval(() => {
-        fetchData()
-      }, 60000)
-    })
-    
+        fetchData();
+      }, 60000);
+    });
+
     // Clear interval on component unmount
     onBeforeUnmount(() => {
       if (refreshInterval.value) {
-        clearInterval(refreshInterval.value)
+        clearInterval(refreshInterval.value);
       }
-    })
-    
+    });
+
     const fetchData = async () => {
+      console.log("Fetching data for", selectedHours.value, "hours");
+      
+      // Always request at least enough data for the largest time scale
+      // This ensures we have data for all time filters
+      const requestConfig = {
+        hours: 168, // 7 days - enough for all time filters
+        limit: 1000, // Get plenty of data points
+        preserveOutliers: true,
+        sampleMethod: 'all'
+      };
+      
+      // Log request config for debugging
+      console.log("Request config:", requestConfig);
+      
       await Promise.all([
-        store.dispatch('fetchStats'),
-        store.dispatch('fetchPingResults', { 
-          hours: selectedHours.value, 
-          limit: selectedHours.value * 60 // One data point per minute
-        })
-      ])
-    }
-    
+        store.dispatch("fetchStats"),
+        store.dispatch("fetchPingResults", requestConfig),
+      ]);
+      
+      // After fetching, log how much data we received
+      console.log("Received data points:", store.getters.latencyData.length);
+      
+      // Log timestamp range
+      const data = store.getters.latencyData;
+      if (data && data.length > 0) {
+        const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
+        console.log("Data from", sortedData[0].timestamp, "to", sortedData[sortedData.length-1].timestamp);
+      }
+    };
+
     const setTimeRange = (hours) => {
-      selectedHours.value = hours
-      fetchData()
-    }
-    
+      selectedHours.value = hours;
+      fetchData();
+    };
+
     const refreshData = () => {
-      fetchData()
-    }
+      fetchData();
+    };
     
+    // Check if there's enough data for a specific time range
+    const hasEnoughDataForTimeRange = (hours) => {
+      // Get the current data points directly from the getter
+      const data = store.getters.latencyData;
+      if (!data || data.length === 0) return false;
+      
+      // Sort data by timestamp to accurately measure time span
+      const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
+      
+      // Calculate the time span of our current data in hours
+      const oldestTimestamp = sortedData[0].timestamp;
+      const newestTimestamp = sortedData[sortedData.length - 1].timestamp;
+      const spanHours = (newestTimestamp - oldestTimestamp) / (1000 * 60 * 60);
+      
+      // Find the current time option index
+      const currentOptionIndex = timeOptions.findIndex(option => option.hours === hours);
+      
+      // Enable the button if:
+      // 1. It's one of the first two time options (3h, 12h) - always enabled
+      // 2. OR we have enough data to justify this scale (at least more than the previous scale)
+      if (currentOptionIndex <= 1) {
+        // Always enable 3h and 12h options
+        return true;
+      } else if (currentOptionIndex > 1) {
+        // For larger time scales, check if we have more data than would justify the previous scale
+        const previousScale = timeOptions[currentOptionIndex - 1].hours;
+        return spanHours > previousScale;
+      }
+      
+      // Default fallback
+      return false;
+    };
+
     // Format date for display
     const formatDate = (dateString) => {
       // Add 'Z' to indicate this is UTC time
-      const date = new Date(dateString + 'Z');
+      const date = new Date(dateString + "Z");
       return date.toLocaleString();
-    }
-    
-    // Compute class based on metric values
-    const getLatencyClass = (value) => {
-      if (value < 20) return 'status-excellent'
-      if (value < 60) return 'status-good'
-      if (value < 100) return 'status-fair'
-      return 'status-poor'
-    }
-    
-    const getJitterClass = (value) => {
-      if (value < 5) return 'status-excellent'
-      if (value < 15) return 'status-good'
-      if (value < 30) return 'status-fair'
-      return 'status-poor'
-    }
-    
-    const getPacketLossClass = (value) => {
-      if (value < 0.5) return 'status-excellent'
-      if (value < 2) return 'status-good'
-      if (value < 5) return 'status-fair'
-      return 'status-poor'
-    }
-    
-    // Chart data for the line chart
+    };
+
+    // These are now handled by the NetworkMetric component
+
+    // Modified to use structured data format for latency
+    // This improves consistency with other metrics
     const chartData = computed(() => {
-      // Take all data points for the selected time range
-      const latencyData = store.getters.latencyData
-      if (latencyData.length === 0) return []
+      const latencyData = store.getters.latencyData;
+      if (latencyData.length === 0) return [];
       
-      // Sample the data to avoid overcrowding
-      const sampleSize = Math.max(1, Math.floor(latencyData.length / 60))
-      const sampledData = latencyData.filter((_, i) => i % sampleSize === 0)
-      
-      return sampledData.map(item => item.value)
-    })
-    
+      // Use the data directly rather than separate arrays
+      return latencyData.map((item) => item.value);
+    });
+
     const chartLabels = computed(() => {
-      // Take all data points for the selected time range
-      const latencyData = store.getters.latencyData
-      if (latencyData.length === 0) return []
+      const latencyData = store.getters.latencyData;
+      if (latencyData.length === 0) return [];
       
-      // Sample the data to avoid overcrowding
-      const sampleSize = Math.max(1, Math.floor(latencyData.length / 60))
-      const sampledData = latencyData.filter((_, i) => i % sampleSize === 0)
-      
-      return sampledData.map(item => {
-        const date = item.timestamp
+      // Format labels based on time range
+      return latencyData.map((item) => {
+        const date = item.timestamp;
         // Format differently depending on time range
-        if (selectedHours.value <= 24) {
-          return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+        if (selectedHours.value <= 12) {
+          // For shorter time periods, show hours:minutes with nicely formatted times
+          return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+        } else if (selectedHours.value <= 72) {
+          // For 1-3 day view, show day and hour
+          return `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:00`;
         } else {
-          return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+          // For 7-day view, show month/day and hour
+          return `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:00`;
         }
-      })
-    })
-    
+      });
+    });
+
     return {
       loading: computed(() => store.state.loading),
       error: computed(() => store.state.error),
       stats: computed(() => store.state.stats),
       chartData,
       chartLabels,
+      latencyData: computed(() => store.getters.latencyData),
       jitterData: computed(() => store.getters.jitterData),
       packetLossData: computed(() => store.getters.packetLossData),
       timeOptions,
@@ -277,12 +316,11 @@ export default {
       setTimeRange,
       refreshData,
       formatDate,
-      getLatencyClass,
-      getJitterClass,
-      getPacketLossClass
-    }
-  }
-}
+      hasEnoughDataForTimeRange,
+      store
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -290,7 +328,25 @@ export default {
   width: 100%;
 }
 
-.loading, .error, .no-data {
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+/* Mobile responsive styling */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.loading,
+.error,
+.no-data {
   text-align: center;
   padding: 2rem;
   background: white;
@@ -318,9 +374,7 @@ export default {
   gap: 1.5rem;
 }
 
-.stat-item {
-  text-align: center;
-}
+/* Stat-item styles now in the NetworkMetric component */
 
 .performance-section {
   margin-top: 2rem;
@@ -355,6 +409,11 @@ export default {
   color: white;
 }
 
+.time-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .chart-card {
   margin-top: 2rem;
   padding-top: 1rem;
@@ -367,43 +426,5 @@ export default {
   color: #555;
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.btn {
-  display: inline-block;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 1rem;
-}
-
-.btn:hover {
-  background-color: #1a2530;
-}
-
-/* Status color classes */
-.status-excellent {
-  color: #28a745;
-}
-
-.status-good {
-  color: #17a2b8;
-}
-
-.status-fair {
-  color: #ffc107;
-}
-
-.status-poor {
-  color: #dc3545;
-}
+/* Status color classes moved to NetworkMetric component */
 </style>
