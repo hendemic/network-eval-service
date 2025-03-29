@@ -5,3 +5,4 @@ env
 .venv/
 ENV/
 venv-py312
+__pycache__
