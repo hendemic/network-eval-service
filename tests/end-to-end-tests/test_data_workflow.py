@@ -214,9 +214,11 @@ class TestEndToEndWorkflow(unittest.TestCase):
         # Check day stats (averages of all 5 results)
         # Expected day stats averages:
         # packet_loss: (0 + 1 + 2 + 3 + 4) / 5 = 2.0
+        # max_packet_loss: 4.0 (highest of all)
         # avg_latency: (15 + 15.5 + 16 + 16.5 + 17) / 5 = 16.0
         # jitter: (1.0 + 1.2 + 1.4 + 1.6 + 1.8) / 5 = 1.4
         self.assertAlmostEqual(data['day_stats']['avg_packet_loss'], 2.0, places=1)
+        self.assertAlmostEqual(data['day_stats']['max_packet_loss'], 4.0, places=1)
         self.assertAlmostEqual(data['day_stats']['avg_latency'], 16.0, places=1)
         self.assertAlmostEqual(data['day_stats']['avg_jitter'], 1.4, places=1)
         
@@ -304,6 +306,8 @@ class TestEndToEndWorkflow(unittest.TestCase):
         self.assertAlmostEqual(stats_data['day_stats']['min_latency'], 15.5, places=1)
         self.assertAlmostEqual(stats_data['day_stats']['max_latency'], 17.3, places=1)
         self.assertAlmostEqual(stats_data['day_stats']['avg_latency'], 16.533, places=1)
+        # Max packet loss should equal the avg packet loss when there's only one record
+        self.assertAlmostEqual(stats_data['day_stats']['max_packet_loss'], stats_data['day_stats']['avg_packet_loss'], places=1)
 
 if __name__ == '__main__':
     unittest.main()

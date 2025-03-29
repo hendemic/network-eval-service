@@ -54,9 +54,10 @@ def create_app(config_name='default'):
         # Calculate 24-hour statistics
         day_ago = datetime.utcnow() - timedelta(hours=24)
         
-        # Get average values for the last 24 hours
+        # Get statistical values for the last 24 hours
         day_stats = db.session.query(
             db.func.avg(PingResult.packet_loss).label('avg_packet_loss'),
+            db.func.max(PingResult.packet_loss).label('max_packet_loss'),
             db.func.avg(PingResult.avg_latency).label('avg_latency'),
             db.func.avg(PingResult.jitter).label('avg_jitter'),
             db.func.min(PingResult.min_latency).label('min_latency'),
@@ -67,6 +68,7 @@ def create_app(config_name='default'):
             'latest': latest.to_dict(),
             'day_stats': {
                 'avg_packet_loss': day_stats.avg_packet_loss if day_stats.avg_packet_loss else 0,
+                'max_packet_loss': day_stats.max_packet_loss if day_stats.max_packet_loss else 0,
                 'avg_latency': day_stats.avg_latency if day_stats.avg_latency else 0,
                 'avg_jitter': day_stats.avg_jitter if day_stats.avg_jitter else 0,
                 'min_latency': day_stats.min_latency if day_stats.min_latency else 0,

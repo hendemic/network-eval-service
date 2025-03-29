@@ -46,12 +46,17 @@ export default createStore({
     }
   },
   actions: {
-    async fetchPingResults({ commit }, { hours = 24, limit = 1000 } = {}) {
+    async fetchPingResults({ commit }, { hours = 24, startTime = null, limit = 1000 } = {}) {
       commit('SET_LOADING', true)
       try {
-        const response = await axios.get(`${API_URL}/ping-results`, {
-          params: { hours, limit }
-        })
+        const params = { hours, limit }
+        
+        // Add startTime param if provided (allows fetching by specific date range)
+        if (startTime !== null) {
+          params.start_time = startTime
+        }
+        
+        const response = await axios.get(`${API_URL}/ping-results`, { params })
         commit('SET_PING_RESULTS', response.data)
       } catch (error) {
         commit('SET_ERROR', error.message || 'Failed to fetch ping results')

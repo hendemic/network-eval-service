@@ -60,62 +60,73 @@
           
           <div class="stat-item">
             <div class="stat-value">
-              {{ stats.day_stats.min_latency.toFixed(2) }} ms
-            </div>
-            <div class="stat-label">Min Latency (24h)</div>
-          </div>
-          
-          <div class="stat-item">
-            <div class="stat-value">
               {{ stats.day_stats.max_latency.toFixed(2) }} ms
             </div>
             <div class="stat-label">Max Latency (24h)</div>
           </div>
           
           <div class="stat-item">
-            <div class="stat-value" :class="getPacketLossClass(stats.day_stats.avg_packet_loss)">
-              {{ stats.day_stats.avg_packet_loss.toFixed(2) }}%
+            <div class="stat-value" :class="getPacketLossClass(stats.day_stats.max_packet_loss)">
+              {{ stats.day_stats.max_packet_loss.toFixed(2) }}%
             </div>
-            <div class="stat-label">Avg Packet Loss (24h)</div>
+            <div class="stat-label">Max Packet Loss (24h)</div>
           </div>
         </div>
       </div>
       
-      <!-- Recent data charts -->
-      <div class="card chart-card">
-        <h3>Recent Network Latency</h3>
-        <line-chart 
-          v-if="chartData.length > 0"
-          :chart-data="chartData" 
-          :chart-labels="chartLabels"
-        />
-        <p v-else>Not enough data to display chart</p>
-      </div>
-      
-      <!-- Network Jitter Chart -->
-      <div class="card chart-card">
-        <h3>Network Jitter</h3>
-        <network-chart 
-          v-if="jitterData.length > 0"
-          :data="jitterData"
-          metric="Jitter"
-          unit="ms"
-          color="#2c3e50"
-        />
-        <p v-else>Not enough data to display chart</p>
-      </div>
-      
-      <!-- Packet Loss Chart -->
-      <div class="card chart-card">
-        <h3>Packet Loss</h3>
-        <network-chart 
-          v-if="packetLossData.length > 0"
-          :data="packetLossData"
-          metric="Packet Loss"
-          unit="%"
-          color="#e74c3c"
-        />
-        <p v-else>Not enough data to display chart</p>
+      <!-- Network Performance Charts -->
+      <div class="card performance-section">
+        <div class="section-header">
+          <h3>Network Performance</h3>
+          <div class="time-filters">
+            <button
+              v-for="(option, index) in timeOptions"
+              :key="index"
+              @click="setTimeRange(option.hours)"
+              :class="{ active: selectedHours === option.hours }"
+              class="time-btn"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- Latency Chart -->
+        <div class="chart-card">
+          <h4>Network Latency</h4>
+          <line-chart 
+            v-if="chartData && chartData.length > 0"
+            :chart-data="chartData" 
+            :chart-labels="chartLabels"
+          />
+          <p v-else>Not enough data to display chart</p>
+        </div>
+        
+        <!-- Network Jitter Chart -->
+        <div class="chart-card">
+          <h4>Network Jitter</h4>
+          <network-chart 
+            v-if="jitterData && jitterData.length > 0"
+            :data="jitterData"
+            metric="Jitter"
+            unit="ms"
+            color="#2c3e50"
+          />
+          <p v-else>Not enough data to display chart</p>
+        </div>
+        
+        <!-- Packet Loss Chart -->
+        <div class="chart-card">
+          <h4>Packet Loss</h4>
+          <network-chart 
+            v-if="packetLossData && packetLossData.length > 0"
+            :data="packetLossData"
+            metric="Packet Loss"
+            unit="%"
+            color="#e74c3c"
+          />
+          <p v-else>Not enough data to display chart</p>
+        </div>
       </div>
     </div>
     
@@ -145,6 +156,15 @@ export default {
   setup() {
     const store = useStore()
     const refreshInterval = ref(null)
+    const selectedHours = ref(3)
+    
+    const timeOptions = [
+      { label: '3 Hours', hours: 3 },
+      { label: '12 Hours', hours: 12 },
+      { label: '24 Hours', hours: 24 },
+      { label: '3 Days', hours: 72 },
+      { label: '7 Days', hours: 168 }
+    ]
     
     // Fetch data on component mount
     onMounted(() => {
@@ -166,8 +186,16 @@ export default {
     const fetchData = async () => {
       await Promise.all([
         store.dispatch('fetchStats'),
-        store.dispatch('fetchPingResults', { hours: 3, limit: 180 }) // Last 3 hours, one data point per minute
+        store.dispatch('fetchPingResults', { 
+          hours: selectedHours.value, 
+          limit: selectedHours.value * 60 // One data point per minute
+        })
       ])
+    }
+    
+    const setTimeRange = (hours) => {
+      selectedHours.value = hours
+      fetchData()
     }
     
     const refreshData = () => {
@@ -205,19 +233,34 @@ export default {
     
     // Chart data for the line chart
     const chartData = computed(() => {
-      const latencyData = store.getters.latencyData.slice(-60) // Last 60 minutes
+      // Take all data points for the selected time range
+      const latencyData = store.getters.latencyData
       if (latencyData.length === 0) return []
       
-      return latencyData.map(item => item.value)
+      // Sample the data to avoid overcrowding
+      const sampleSize = Math.max(1, Math.floor(latencyData.length / 60))
+      const sampledData = latencyData.filter((_, i) => i % sampleSize === 0)
+      
+      return sampledData.map(item => item.value)
     })
     
     const chartLabels = computed(() => {
-      const latencyData = store.getters.latencyData.slice(-60) // Last 60 minutes
+      // Take all data points for the selected time range
+      const latencyData = store.getters.latencyData
       if (latencyData.length === 0) return []
       
-      return latencyData.map(item => {
+      // Sample the data to avoid overcrowding
+      const sampleSize = Math.max(1, Math.floor(latencyData.length / 60))
+      const sampledData = latencyData.filter((_, i) => i % sampleSize === 0)
+      
+      return sampledData.map(item => {
         const date = item.timestamp
-        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+        // Format differently depending on time range
+        if (selectedHours.value <= 24) {
+          return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+        } else {
+          return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+        }
       })
     })
     
@@ -229,6 +272,9 @@ export default {
       chartLabels,
       jitterData: computed(() => store.getters.jitterData),
       packetLossData: computed(() => store.getters.packetLossData),
+      timeOptions,
+      selectedHours,
+      setTimeRange,
       refreshData,
       formatDate,
       getLatencyClass,
@@ -276,8 +322,49 @@ export default {
   text-align: center;
 }
 
+.performance-section {
+  margin-top: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.time-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.time-btn {
+  padding: 0.4rem 0.8rem;
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.time-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
 .chart-card {
   margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.chart-card h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #555;
 }
 
 .actions {

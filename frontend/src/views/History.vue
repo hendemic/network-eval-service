@@ -3,31 +3,17 @@
     <h2>Network Test History</h2>
     
     <div class="controls">
-      <div class="filter-row">
-        <div class="time-filters">
-          <button
-            v-for="(option, index) in timeOptions"
-            :key="index"
-            @click="setTimeRange(option.hours)"
-            :class="{ active: selectedHours === option.hours }"
-            class="time-btn"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-        
-        <div class="page-size-controls">
-          <span class="control-label">Entries per page:</span>
-          <button
-            v-for="size in pageSizeOptions"
-            :key="size"
-            @click="setPageSize(size)"
-            :class="{ active: pageSize === size }"
-            class="page-size-btn"
-          >
-            {{ size }}
-          </button>
-        </div>
+      <div class="page-size-controls">
+        <span class="control-label">Entries per page:</span>
+        <button
+          v-for="size in pageSizeOptions"
+          :key="size"
+          @click="setPageSize(size)"
+          :class="{ active: pageSize === size }"
+          class="page-size-btn"
+        >
+          {{ size }}
+        </button>
       </div>
     </div>
     
@@ -110,18 +96,8 @@ export default {
   },
   setup() {
     const store = useStore()
-    const selectedHours = ref(24)
     const currentPage = ref(1)
     const pageSize = ref(10)
-    
-    const timeOptions = [
-      { label: '3 Hours', hours: 3 },
-      { label: '12 Hours', hours: 12 },
-      { label: '24 Hours', hours: 24 },
-      { label: '3 Days', hours: 72 },
-      { label: '7 Days', hours: 168 }
-    ]
-    
     const pageSizeOptions = [10, 50, 100]
     
     // Fetch data on component mount
@@ -130,17 +106,14 @@ export default {
     })
     
     const fetchData = async () => {
+      // Fetch the last 72 hours of data by default (3 days)
       await store.dispatch('fetchPingResults', { 
-        hours: selectedHours.value,
+        hours: 72,
         limit: 10000
       })
+      
       // Reset to first page when new data is fetched
       currentPage.value = 1
-    }
-    
-    const setTimeRange = (hours) => {
-      selectedHours.value = hours
-      fetchData()
     }
     
     const setPageSize = (size) => {
@@ -199,15 +172,12 @@ export default {
       error: computed(() => store.state.error),
       pingResults,
       paginatedResults,
-      timeOptions,
       pageSizeOptions,
-      selectedHours,
       pageSize,
       currentPage,
       totalPages,
       startIndex,
       endIndex,
-      setTimeRange,
       setPageSize,
       refreshData,
       nextPage,
@@ -227,29 +197,16 @@ export default {
   margin-bottom: 2rem;
 }
 
-.filter-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.time-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.time-btn, .page-size-btn {
+.page-size-btn {
   padding: 0.5rem 1rem;
   background-color: #f1f1f1;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.time-btn.active, .page-size-btn.active {
+.page-size-btn.active {
   background-color: var(--primary-color);
   color: white;
 }
