@@ -190,34 +190,16 @@ export default {
     });
 
     const fetchData = async () => {
-      console.log("Fetching data for", selectedHours.value, "hours");
-      
-      // Always request at least enough data for the largest time scale
-      // This ensures we have data for all time filters
+      // Request enough data for all time filters
       const requestConfig = {
-        hours: 168, // 7 days - enough for all time filters
-        limit: 1000, // Get plenty of data points
-        preserveOutliers: true,
-        sampleMethod: 'all'
+        hours: 168, // 7 days to cover all time filters
+        limit: 1000
       };
-      
-      // Log request config for debugging
-      console.log("Request config:", requestConfig);
       
       await Promise.all([
         store.dispatch("fetchStats"),
         store.dispatch("fetchPingResults", requestConfig),
       ]);
-      
-      // After fetching, log how much data we received
-      console.log("Received data points:", store.getters.latencyData.length);
-      
-      // Log timestamp range
-      const data = store.getters.latencyData;
-      if (data && data.length > 0) {
-        const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
-        console.log("Data from", sortedData[0].timestamp, "to", sortedData[sortedData.length-1].timestamp);
-      }
     };
 
     const setTimeRange = (hours) => {

@@ -1,20 +1,37 @@
 <template>
   <div class="network-metric-chart-container">
     <div ref="chartContainer" class="chart"></div>
+    <Tooltip 
+      :visible="tooltipVisible" 
+      :x="tooltipX" 
+      :y="tooltipY"
+    >
+      <div v-if="tooltipData">
+        <div style="font-weight: bold; margin-bottom: 4px;">
+          {{ tooltipData.date }} {{ tooltipData.time }}
+        </div>
+        <div>
+          {{ metric }}: <strong>{{ tooltipData.value }} {{ unit }}</strong>
+        </div>
+      </div>
+    </Tooltip>
   </div>
 </template>
 
 <script>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import * as d3 from 'd3'
+import Tooltip from './Tooltip.vue'
 
 export default {
   name: 'NetworkMetricChart',
+  components: {
+    Tooltip
+  },
   props: {
     metric: {
       type: String,
-      required: true,
-      default: 'Latency'
+      required: true
     },
     unit: {
       type: String,
@@ -40,25 +57,17 @@ export default {
   setup(props) {
     const chartContainer = ref(null)
     
-    // Create a simple tooltip
-    const tooltip = d3.select('body')
-      .append('div')
-      .attr('class', 'chart-tooltip')
-      .style('position', 'fixed')
-      .style('background', 'rgba(0,0,0,0.7)')
-      .style('color', 'white')
-      .style('padding', '8px')
-      .style('border-radius', '4px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('opacity', 0)
-      .style('z-index', 9999)
+    // Tooltip state
+    const tooltipVisible = ref(false)
+    const tooltipX = ref(0)
+    const tooltipY = ref(0)
+    const tooltipData = ref(null)
     
     const drawChart = () => {
-      // Check if we have data and container
+      // Exit if no container or data
       if (!chartContainer.value || !props.data || props.data.length === 0) return
       
-      // Clear previous chart if it exists
+      // Clear previous chart
       d3.select(chartContainer.value).selectAll('*').remove()
       
       // Set dimensions
@@ -74,39 +83,24 @@ export default {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`)
       
-      // IMPORTANT: Clone the data and ensure all timestamps are Date objects
+      // Process data and ensure timestamps are Date objects
       const processedData = props.data.map(d => ({
         timestamp: d.timestamp instanceof Date ? d.timestamp : new Date(d.timestamp),
         value: d.value
-      }))
+      })).sort((a, b) => a.timestamp - b.timestamp)
       
-      // Sort data by timestamp
-      const sortedData = [...processedData].sort((a, b) => a.timestamp - b.timestamp)
+      // Calculate time range for the chart
+      const latestTimestamp = d3.max(processedData, d => d.timestamp)
+      const startTime = new Date(latestTimestamp)
+      startTime.setHours(startTime.getHours() - props.selectedHours)
       
-      // Log data range
-      console.log("Data from", sortedData[0]?.timestamp, "to", sortedData[sortedData.length-1]?.timestamp);
-      console.log("Data points:", sortedData.length);
-      
-      // Get the latest data timestamp
-      const latestTimestamp = d3.max(sortedData, d => d.timestamp);
-      console.log("Latest timestamp:", latestTimestamp);
-      
-      // Calculate start time based on selected hours
-      const startTime = new Date(latestTimestamp);
-      startTime.setHours(startTime.getHours() - props.selectedHours);
-      console.log("Start time for selected hours:", startTime);
-      
-      // Create x scale based on selected time range
+      // Create time scale
       const xScale = d3.scaleTime()
         .domain([startTime, latestTimestamp])
         .range([0, width])
       
-      console.log(`Domain set to: ${startTime.toLocaleTimeString()} - ${latestTimestamp.toLocaleTimeString()} (${props.selectedHours} hours)`)
-      
-      // Determine Y axis scale with custom min
-      let yMax = d3.max(sortedData, d => d.value) * 1.1
-      
-      // Apply minimum scale if provided
+      // Calculate y scale
+      let yMax = d3.max(processedData, d => d.value) * 1.1
       if (props.minYScale) {
         yMax = Math.max(yMax, props.minYScale)
       }
@@ -115,12 +109,11 @@ export default {
         .domain([0, yMax])
         .range([height, 0])
       
-      // Draw X axis (no labels)
+      // Draw axes
       svg.append('g')
         .attr('transform', `translate(0,${height})`)
         .call(d3.axisBottom(xScale).tickSize(0).tickFormat(''))
       
-      // Draw Y axis
       svg.append('g')
         .call(d3.axisLeft(yScale))
       
@@ -134,48 +127,29 @@ export default {
         .style('fill', '#666')
         .text(`${props.metric} (${props.unit})`)
       
-      // Calculate bar width based on time range and data density
-      const barWidth = () => {
-        // Filter data to the selected time range for width calculation
-        const rangeData = sortedData.filter(d => 
-          d.timestamp >= startTime && d.timestamp <= latestTimestamp
-        );
-        
-        if (rangeData.length <= 1) return 10;
-        
-        // Calculate average time between bars in pixels
-        const timeRangeInMs = latestTimestamp - startTime;
-        const pixelsPerBar = width / rangeData.length;
-        
-        // Scale it slightly to leave small gaps
-        return Math.max(1, pixelsPerBar * 0.8);
-      };
-      
-      // Filter data for the selected time range for better display
-      const visibleData = sortedData.filter(d => 
+      // Filter data to the selected time range
+      const visibleData = processedData.filter(d => 
         d.timestamp >= startTime && d.timestamp <= latestTimestamp
-      );
-      console.log("Visible data points:", visibleData.length);
+      )
       
-      // Add visual indication for the time range
-      svg.append('rect')
-        .attr('class', 'time-range-indicator')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', width)
-        .attr('height', height)
-        .attr('fill', 'rgba(200, 200, 200, 0.05)')
-        .attr('stroke', 'rgba(200, 200, 200, 0.2)')
-        .attr('stroke-width', 1)
+      // Debug log for each chart
+      console.log(`${props.metric} chart data:`, {
+        total: processedData.length,
+        visible: visibleData.length,
+        timeRange: `${startTime.toLocaleTimeString()} - ${latestTimestamp.toLocaleTimeString()}`
+      })
       
-      // Draw the bars - only for points within the selected time range
+      // Calculate bar width
+      const barWidth = Math.max(1, (width / Math.max(1, visibleData.length)) * 0.8)
+      
+      // Draw the bars
       svg.selectAll('.bar')
         .data(visibleData)
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('x', d => xScale(d.timestamp) - (barWidth() / 2)) // Center bar on timestamp
-        .attr('width', barWidth())
+        .attr('x', d => xScale(d.timestamp) - (barWidth / 2))
+        .attr('width', barWidth)
         .attr('y', d => yScale(d.value))
         .attr('height', d => height - yScale(d.value))
         .attr('fill', props.color)
@@ -188,64 +162,57 @@ export default {
             .attr('stroke', '#333')
             .attr('stroke-width', 1)
           
-          // Format the tooltip
-          const date = d.timestamp;
-          const formattedDate = date.toLocaleDateString();
-          const formattedTime = date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+          // Make sure we have a valid timestamp
+          const date = new Date(d.timestamp)
           
-          const tooltipHtml = `
-            <div>
-              <div style="font-weight: bold;">${formattedDate} ${formattedTime}</div>
-              <div>${props.metric}: ${d.value.toFixed(2)} ${props.unit}</div>
-            </div>
-          `;
+          // Update tooltip data
+          tooltipData.value = {
+            date: date.toLocaleDateString(),
+            time: date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}),
+            value: d.value.toFixed(2)
+          }
           
-          // Show and position tooltip
-          tooltip.html(tooltipHtml)
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 28) + 'px')
-            .style('opacity', 0.9);
+          // Position and show tooltip - use clientX and clientY for viewport-relative positioning
+          tooltipX.value = event.clientX + 10
+          tooltipY.value = event.clientY - 28
+          tooltipVisible.value = true
         })
         .on('mousemove', function(event) {
-          // Update tooltip position
-          tooltip
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 28) + 'px');
+          // Update tooltip position using client coordinates (viewport-relative)
+          tooltipX.value = event.clientX + 10
+          tooltipY.value = event.clientY - 28
         })
         .on('mouseout', function() {
-          // Restore bar appearance
+          // Reset bar style
           d3.select(this)
             .attr('opacity', 0.8)
             .attr('stroke', 'none')
           
           // Hide tooltip
-          tooltip.style('opacity', 0);
-        });
+          tooltipVisible.value = false
+        })
     }
     
-    // Draw chart on mount
+    // Draw chart on mount and handle resize
     onMounted(() => {
       drawChart()
-      
-      // Handle window resize
       window.addEventListener('resize', drawChart)
     })
     
-    // Clean up event listener and tooltips on unmount
+    // Clean up
     onBeforeUnmount(() => {
       window.removeEventListener('resize', drawChart)
-      
-      // Remove tooltip
-      tooltip.remove()
     })
     
-    // Redraw chart when data changes
-    watch(() => [props.data, props.selectedHours], () => {
-      drawChart()
-    }, { deep: true })
+    // Redraw when data or selectedHours changes
+    watch(() => [props.data, props.selectedHours], drawChart, { deep: true })
     
     return {
-      chartContainer
+      chartContainer,
+      tooltipVisible,
+      tooltipX,
+      tooltipY,
+      tooltipData
     }
   }
 }
