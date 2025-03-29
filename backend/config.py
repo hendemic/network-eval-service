@@ -24,7 +24,7 @@ class Config:
     
     # Network test configuration
     TEST_TARGET = os.environ.get('TEST_TARGET', '1.1.1.1')
-    TEST_COUNT = int(os.environ.get('TEST_COUNT', '100'))
+    TEST_COUNT = int(os.environ.get('TEST_COUNT', '400'))
     TEST_INTERVAL = os.environ.get('TEST_INTERVAL', '0.1')
 
 class DevelopmentConfig(Config):
