@@ -1,5 +1,4 @@
 # Docker Compose configuration for Network Evaluation Service
-# This is a test line to make sure the database persists between builds
 
 services:
   db:
