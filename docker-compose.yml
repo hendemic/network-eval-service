@@ -1,4 +1,5 @@
 # Docker Compose configuration for Network Evaluation Service
+# This is a test line to make sure the database persists between builds
 
 services:
   db:
@@ -12,7 +13,11 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-network_tests}
       - PGDATABASE=${POSTGRES_DB:-network_tests}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netmon} -d ${POSTGRES_DB:-network_tests}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-netmon} -d ${POSTGRES_DB:-network_tests}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
