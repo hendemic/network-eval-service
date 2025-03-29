@@ -74,14 +74,14 @@ export default {
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--primary-color, #2c3e50); /* Using CSS variable with fallback */
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-sm);
+  color: var(--brand-primary);
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 </style>

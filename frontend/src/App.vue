@@ -16,29 +16,7 @@ export default {
 </script>
 
 <style>
-:root {
-  --primary-color: #2c3e50;
-  --secondary-color: #42b983;
-  --bg-color: #f8f9fa;
-  --text-color: #333;
-  --border-color: #ddd;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--text-color);
-  background-color: var(--bg-color);
-  line-height: 1.6;
-}
-
+/* App-specific styles */
 #app {
   display: flex;
   flex-direction: column;
@@ -46,47 +24,35 @@ body {
 }
 
 header {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 1rem;
+  background-color: var(--brand-primary);
+  color: var(--text-white);
+  padding: var(--space-md);
   text-align: center;
 }
 
 main {
   flex: 1;
-  padding: 2rem;
+  padding: var(--space-xl);
   max-width: 1200px;
-  margin: 2rem auto 0;
+  margin: var(--space-xl) auto 0;
   width: 100%;
 }
 
 footer {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--brand-primary);
+  color: var(--text-white);
   text-align: center;
-  padding: 1rem;
-}
-
-h1, h2, h3 {
-  margin-bottom: 1rem;
-}
-
-.card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  padding: var(--space-md);
 }
 
 .stat-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--secondary-color);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-secondary);
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
 }
 </style>

@@ -36,14 +36,14 @@ export default {
 <style scoped>
 .tooltip {
   background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  color: var(--text-white);
+  padding: var(--space-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
   pointer-events: none;
   z-index: 9999;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-quick);
   max-width: 200px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--shadow-sm);
 }
 </style>

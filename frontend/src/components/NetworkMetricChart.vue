@@ -39,7 +39,7 @@ export default {
     },
     color: {
       type: String,
-      default: '#42b983'
+      default: null // Will use CSS variables based on metric
     },
     minYScale: {
       type: Number,
@@ -62,6 +62,24 @@ export default {
     const tooltipX = ref(0)
     const tooltipY = ref(0)
     const tooltipData = ref(null)
+    
+    // Get the appropriate chart color based on the metric
+    const getChartColor = () => {
+      // If color is explicitly provided, use it
+      if (props.color) return props.color;
+      
+      // Otherwise use CSS variables based on metric
+      const metricLower = props.metric.toLowerCase();
+      if (metricLower.includes('latency')) {
+        return getComputedStyle(document.documentElement).getPropertyValue('--chart-latency').trim();
+      } else if (metricLower.includes('jitter')) {
+        return getComputedStyle(document.documentElement).getPropertyValue('--chart-jitter').trim();
+      } else if (metricLower.includes('packet') || metricLower.includes('loss')) {
+        return getComputedStyle(document.documentElement).getPropertyValue('--chart-packet-loss').trim();
+      }
+      // Default color
+      return getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim();
+    };
     
     const drawChart = () => {
       // Exit if no container or data
@@ -188,7 +206,7 @@ export default {
         .attr('width', barWidth)
         .attr('y', d => yScale(d.value))
         .attr('height', d => height - yScale(d.value))
-        .attr('fill', props.color)
+        .attr('fill', getChartColor())
         .attr('opacity', 0.8)
         .attr('rx', 1)
         .on('mouseover', function(event, d) {
@@ -267,11 +285,11 @@ export default {
 
 :deep(.domain),
 :deep(.tick line) {
-  stroke: #ddd;
+  stroke: var(--border-light);
 }
 
 :deep(.tick text) {
-  font-size: 10px;
-  fill: #666;
+  font-size: var(--font-size-xs);
+  fill: var(--text-secondary);
 }
 </style>

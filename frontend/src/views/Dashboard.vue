@@ -100,7 +100,6 @@
             :data="latencyData"
             metric="Latency"
             unit="ms"
-            color="#42b983"
             :minYScale="50"
             :selectedHours="selectedHours"
           />
@@ -115,7 +114,6 @@
             :data="jitterData"
             metric="Jitter"
             unit="ms"
-            color="#2c3e50"
             :minYScale="10"
             :selectedHours="selectedHours"
           />
@@ -130,7 +128,6 @@
             :data="packetLossData"
             metric="Packet Loss"
             unit="%"
-            color="#e74c3c"
             :minYScale="5"
             :selectedHours="selectedHours"
           />
@@ -314,7 +311,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-xl);
 }
 
 /* Mobile responsive styling */
@@ -330,65 +327,65 @@ export default {
 .error,
 .no-data {
   text-align: center;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: var(--space-xl);
+  background: var(--bg-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 .error {
-  color: #d9534f;
+  color: var(--brand-danger);
 }
 
 .stats-overview {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-xl);
 }
 
 .last-updated {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  gap: var(--space-lg);
 }
 
 /* Stat-item styles now in the NetworkMetric component */
 
 .performance-section {
-  margin-top: 2rem;
+  margin-top: var(--space-xl);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--space-md);
 }
 
 .time-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 
 .time-btn {
-  padding: 0.4rem 0.8rem;
-  background-color: #f1f1f1;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--bg-light);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 .time-btn.active {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--brand-primary);
+  color: var(--text-white);
 }
 
 .time-btn.disabled {
@@ -397,15 +394,15 @@ export default {
 }
 
 .chart-card {
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: var(--border-width-thin) solid var(--border-light);
 }
 
 .chart-card h4 {
   margin-top: 0;
-  margin-bottom: 1rem;
-  color: #555;
+  margin-bottom: var(--space-md);
+  color: var(--text-secondary);
 }
 
 /* Status color classes moved to NetworkMetric component */

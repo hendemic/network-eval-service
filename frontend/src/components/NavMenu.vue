@@ -69,9 +69,9 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
-  padding: 0.5rem;
-  margin-right: 0.5rem;
+  color: var(--text-secondary);
+  padding: var(--space-sm);
+  margin-right: var(--space-sm);
   width: 40px;
   height: 40px;
 }
@@ -79,37 +79,37 @@ export default {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-md);
 }
 
 .nav-item {
   text-decoration: none;
-  color: #666;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
+  color: var(--text-secondary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-quick), color var(--transition-quick);
 }
 
 .nav-item:hover {
-  background-color: #f1f1f1;
+  background-color: var(--bg-light);
 }
 
 .nav-item.active {
-  color: var(--primary-color);
-  font-weight: 600;
+  color: var(--brand-primary);
+  font-weight: var(--font-weight-bold);
 }
 
 .refresh-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
-  padding: 0.5rem;
-  border-radius: 4px;
+  color: var(--text-secondary);
+  padding: var(--space-sm);
+  border-radius: var(--border-radius-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
+  gap: var(--space-sm);
+  transition: background-color var(--transition-quick);
 }
 
 .refresh-text {
@@ -117,8 +117,8 @@ export default {
 }
 
 .refresh-btn:hover {
-  background-color: #f1f1f1;
-  color: var(--primary-color);
+  background-color: var(--bg-light);
+  color: var(--brand-primary);
 }
 
 /* Mobile responsive styling */
@@ -141,9 +141,9 @@ export default {
     position: absolute;
     width: 100%;
     height: 3px;
-    background-color: #666;
+    background-color: var(--text-secondary);
     border-radius: 3px;
-    transition: all 0.3s ease;
+    transition: all var(--transition-medium);
   }
   
   /* Position the lines */
@@ -181,16 +181,16 @@ export default {
     right: 0;
     width: 66vw; /* Use viewport width instead of percentage of parent */
     max-width: 300px;
-    background: white;
-    padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    background: var(--bg-white);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius-md);
     z-index: 10;
-    margin-top: 0.5rem;
+    margin-top: var(--space-sm);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.3s ease;
+    transition: all var(--transition-medium);
   }
   
   .nav-menu-expanded {
@@ -202,12 +202,12 @@ export default {
   .nav-item, .refresh-btn {
     width: 100%;
     text-align: right;
-    margin: 0.5rem 0;
-    padding: 0.75rem 1rem;
+    margin: var(--space-sm) 0;
+    padding: var(--space-sm) var(--space-md);
   }
   
   .nav-item:hover {
-    background-color: #f8f8f8;
+    background-color: var(--bg-light);
   }
   
   .refresh-text {

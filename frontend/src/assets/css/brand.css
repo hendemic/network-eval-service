@@ -1,0 +1,79 @@
+/**
+ * Network Evaluation Service - Brand Stylesheet
+ * Contains all global design variables for consistent styling
+ */
+
+:root {
+  /* Color Palette */
+  --brand-primary: #2c3e50;
+  --brand-secondary: #42b983;
+  --brand-accent: #3498db;
+  --brand-warning: #f39c12;
+  --brand-danger: #e74c3c;
+  --brand-success: #27ae60;
+  
+  /* Backgrounds */
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --bg-dark: #343a40;
+  
+  /* Text Colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-light: #999999;
+  --text-white: #ffffff;
+  
+  /* Border Colors */
+  --border-light: #dddddd;
+  --border-medium: #bbbbbb;
+  --border-dark: #555555;
+  
+  /* Chart Colors */
+  --chart-latency: #3498db;
+  --chart-jitter: #9b59b6;
+  --chart-packet-loss: #e74c3c;
+  
+  /* Typography */
+  --font-family-primary: 'Avenir', Helvetica, Arial, sans-serif;
+  --font-family-secondary: 'Roboto', 'Segoe UI', Tahoma, sans-serif;
+  --font-family-monospace: 'Menlo', 'Monaco', 'Consolas', monospace;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;  /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-md: 1rem;     /* 16px */
+  --font-size-lg: 1.25rem;  /* 20px */
+  --font-size-xl: 1.5rem;   /* 24px */
+  --font-size-2xl: 2rem;    /* 32px */
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;  /* 4px */
+  --space-sm: 0.5rem;   /* 8px */
+  --space-md: 1rem;     /* 16px */
+  --space-lg: 1.5rem;   /* 24px */
+  --space-xl: 2rem;     /* 32px */
+  
+  /* Borders */
+  --border-radius-sm: 0.25rem;  /* 4px */
+  --border-radius-md: 0.5rem;   /* 8px */
+  --border-radius-lg: 1rem;     /* 16px */
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 3px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-quick: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
