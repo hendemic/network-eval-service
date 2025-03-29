@@ -12,6 +12,13 @@ db_host = os.environ.get("POSTGRES_HOST", "db")
 db_port = os.environ.get("POSTGRES_PORT", "5432")
 db_name = os.environ.get("POSTGRES_DB", "network_tests")
 
+# Print all database connection details for debugging
+print("Database connection details:")
+print(f"  User: {db_user}")
+print(f"  Host: {db_host}")
+print(f"  Port: {db_port}")
+print(f"  Database: {db_name}")
+
 print(f"Checking connection to {db_host}:{db_port}/{db_name} as {db_user}")
 db_url = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 

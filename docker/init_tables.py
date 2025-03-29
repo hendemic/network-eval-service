@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import os
+
+# Add parent directory to path so imports work correctly
+sys.path.append('/app')
+
 from backend.models import db, PingResult
 from backend.app import create_app
 
