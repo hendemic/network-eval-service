@@ -275,19 +275,19 @@ COMPOSE_FILE="$INSTALL_DIR/docker-compose.yml"
 # Stop and remove containers, networks, and volumes
 if [ -f "$COMPOSE_FILE" ]; then
   progress "Stopping and removing Docker containers, networks, and volumes..."
-  
+
   # We use pushd/popd to safely change directory while keeping track of where we were
   pushd "$INSTALL_DIR" > /dev/null
-  
+
   # The -v flag removes volumes defined in the compose file
   docker compose down -v
-  
+
   # Get the directory name for container prefix (used by docker-compose)
   DIR_NAME=$(basename "$INSTALL_DIR")
-  
+
   # Return to original directory immediately after docker compose command
   popd > /dev/null
-  
+
   # Remove specific containers if they still exist
   progress "Checking for remaining containers..."
   for CONTAINER in "${DIR_NAME}-db-1" "${DIR_NAME}-web-1" "${DIR_NAME}-test-1" "${DIR_NAME}-db-init-1"; do
@@ -296,14 +296,14 @@ if [ -f "$COMPOSE_FILE" ]; then
       docker rm -f "$CONTAINER"
     fi
   done
-  
+
   # Remove the specific volume
   progress "Checking for remaining volumes..."
   if docker volume ls --format '{{.Name}}' | grep -q "^${DIR_NAME}_postgres_data$"; then
     echo "Removing volume: ${DIR_NAME}_postgres_data"
     docker volume rm "${DIR_NAME}_postgres_data"
   fi
-  
+
   # Also check for any other volumes with a similar name pattern
   OTHER_VOLUMES=$(docker volume ls --format '{{.Name}}' | grep "network.*evaluation.*postgres")
   if [ ! -z "$OTHER_VOLUMES" ]; then
@@ -313,7 +313,7 @@ if [ -f "$COMPOSE_FILE" ]; then
       docker volume rm "$VOL"
     done
   fi
-  
+
   success "Docker resources removed"
 fi
 
@@ -334,11 +334,11 @@ echo "Attempting to remove directory: $INSTALL_DIR"
 # First try with regular rm
 if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
   echo "Standard removal failed, trying with additional permissions..."
-  
+
   # Try to fix permissions and retry
   find "$INSTALL_DIR" -type d -exec chmod 755 {} \; 2>/dev/null
   find "$INSTALL_DIR" -type f -exec chmod 644 {} \; 2>/dev/null
-  
+
   # Try again with removal
   if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
     echo "Using more forceful removal methods..."
@@ -390,4 +390,4 @@ echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
 echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh${NC}"
 echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh${NC}"
-echo -e "${RED}WARNING: The uninstall utility is experimental. For safest removal, remove docker containers, volumes, program directory, and bash shortcuts manually.${NC}"
+echo -e "${RED}WARNING: The uninstall utility is experimental.${NC}"
