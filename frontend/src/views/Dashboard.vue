@@ -10,8 +10,14 @@
 
     <div v-if="loading" class="loading">Loading...</div>
 
-    <div v-else-if="error" class="error">
+    <div v-else-if="error && !error.includes('404')" class="error">
       {{ error }}
+    </div>
+    
+    <div v-else-if="error && error.includes('404')" class="waiting">
+      <div class="waiting-icon">⏱️</div>
+      <div>Waiting for first network test data...</div>
+      <div class="waiting-subtext">Initial test may take 60 seconds or longer depending on your test configuration</div>
     </div>
 
     <div v-else-if="stats">
@@ -139,8 +145,10 @@
       </div>
     </div>
 
-    <div v-else class="no-data">
-      No data available. Ensure the network tests are running.
+    <div v-else class="waiting">
+      <div class="waiting-icon">⏱️</div>
+      <div>Waiting for network test data...</div>
+      <div class="waiting-subtext">Please ensure tests are properly configured</div>
     </div>
   </div>
 </template>
@@ -356,7 +364,7 @@ export default {
 
 .loading,
 .error,
-.no-data {
+.waiting {
   text-align: center;
   padding: var(--space-xl);
   background: var(--bg-white);
@@ -366,6 +374,21 @@ export default {
 
 .error {
   color: var(--brand-danger);
+}
+
+.waiting {
+  color: var(--text-primary);
+}
+
+.waiting-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-md);
+}
+
+.waiting-subtext {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--space-sm);
 }
 
 .stats-overview {

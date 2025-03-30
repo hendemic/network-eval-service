@@ -179,8 +179,26 @@ export default {
         timeRange: `${startTime.toLocaleTimeString()} - ${latestTimestamp.toLocaleTimeString()}`
       })
       
-      // Calculate bar width
-      const barWidth = Math.max(1, (width / Math.max(1, visibleData.length)) * 0.8)
+      // Set maximum bar width based on time range
+      let maxBarWidth
+      
+      if (props.selectedHours <= 3) {
+        // For 3 hours view - allow wider bars
+        maxBarWidth = 6
+      } else if (props.selectedHours <= 24) {
+        // For 12-24 hour views - medium maximum
+        maxBarWidth = 4
+      } else if (props.selectedHours <= 72) {
+        // For 3 day view - smaller maximum
+        maxBarWidth = 2
+      } else {
+        // For 7 day view - very small maximum
+        maxBarWidth = 1.5
+      }
+      
+      // Calculate bar width based on available space but cap at maximum
+      const calculatedWidth = (width / Math.max(1, visibleData.length)) * 0.8
+      const barWidth = Math.min(maxBarWidth, Math.max(1, calculatedWidth))
       
       // Draw the bars
       svg.selectAll('.bar')
@@ -188,7 +206,7 @@ export default {
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .attr('x', d => xScale(d.timestamp) - (barWidth / 2))
+        .attr('x', d => xScale(d.timestamp)) // Align to exact timestamp instead of centering
         .attr('width', barWidth)
         .attr('y', d => yScale(d.value))
         .attr('height', d => height - yScale(d.value))
