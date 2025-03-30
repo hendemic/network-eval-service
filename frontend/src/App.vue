@@ -5,21 +5,18 @@
       <router-view />
     </main>
     <footer>
-      <p>
-        Network Evaluation Service &copy; {{ new Date().getFullYear() }} | Made
-        with ❤️ in Seattle.
-      </p>
+      <p>Network Evaluation Service &copy; {{ new Date().getFullYear() }}</p>
     </footer>
   </div>
 </template>
 
 <script>
-import UpdateNotification from './components/UpdateNotification.vue';
+import UpdateNotification from "./components/UpdateNotification.vue";
 
 export default {
   name: "App",
   components: {
-    UpdateNotification
+    UpdateNotification,
   },
   mounted() {
     // Set the document title
