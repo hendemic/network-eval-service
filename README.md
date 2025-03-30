@@ -1,6 +1,6 @@
 # Network Evaluation Service
 
-ISP giving you the run-around with you rintermitent drops? Having issues with your home network configuration? NES aims to give a minute by minute picture into your home network by collecting ping, jitter, and packet loss data almost continuously.
+ISP giving you the run-around with your intermitent drops? Having issues with your home network configuration? NES aims to give a minute by minute picture into your home network by collecting ping, jitter, and packet loss data almost continuously.
 
 ## Features
 

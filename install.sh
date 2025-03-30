@@ -17,7 +17,6 @@ INSTALL_DIR="/opt/network-evaluation-service"
 # Print header
 echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}   Network Evaluation Service Installer     ${NC}"
-echo -e "${GREEN}   Docker Edition                          ${NC}"
 echo -e "${GREEN}============================================${NC}"
 
 # Check if running as root
@@ -39,7 +38,7 @@ success() {
 # Function to check for required tools
 check_requirements() {
   progress "Checking requirements..."
-  
+
   # Check if Docker is installed
   if ! command -v docker &> /dev/null; then
     echo -e "${RED}Docker is not installed. Installing Docker...${NC}"
@@ -47,20 +46,20 @@ check_requirements() {
     sh get-docker.sh
     rm get-docker.sh
   fi
-  
+
   # Check if Docker Compose is installed
   if ! command -v docker compose &> /dev/null; then
     echo -e "${RED}Docker Compose plugin is not installed. Installing Docker Compose...${NC}"
     apt-get update
     apt-get install -y docker-compose-plugin
   fi
-  
+
   # Verify docker is running
   if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Docker is not running. Starting Docker...${NC}"
     systemctl start docker
   fi
-  
+
   success "All requirements satisfied"
 }
 
@@ -132,15 +131,15 @@ EOF
   else
     cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
   fi
-  
+
   # Generate a secure random password and secret key
   RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -d "=+/")
   RANDOM_SECRET=$(openssl rand -hex 24)
-  
+
   # Update the password and secret key in .env file
   sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env"
   sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env"
-  
+
   echo -e "${YELLOW}Environment file created with secure random credentials.${NC}"
   echo -e "${YELLOW}Please review and edit if needed:${NC}"
   echo -e "${YELLOW}  sudo nano $INSTALL_DIR/.env${NC}"
@@ -162,9 +161,10 @@ fi
 chmod 600 "$INSTALL_DIR/.env"
 success "Environment variables configured"
 
-# 4. Make init script executable
+# 4. Make scripts executable
 chmod +x "$INSTALL_DIR/docker/init-db.sh"
-success "Database initialization script prepared"
+chmod +x "$INSTALL_DIR/update.sh"
+success "Scripts prepared"
 
 # 5. Build and run Docker containers
 progress "Building Docker containers..."
@@ -227,4 +227,4 @@ echo -e "  - Docker Compose file: ${YELLOW}$INSTALL_DIR/docker-compose.yml${NC}"
 echo -e "\nUseful commands:"
 echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
-echo -e "  - Update services: ${YELLOW}cd $INSTALL_DIR && git pull && docker compose up -d --build${NC}"
+echo -e "  - Update services: ${YELLOW}cd $INSTALL_DIR && ./update.sh${NC}"
