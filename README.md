@@ -72,17 +72,26 @@ Configuration is done through environment variables in the `.env` file located i
 ## Upgrading
 To upgrade to a new version:
 
+The install script provides an update utility that is set up as a bash short cut. For easiest updating use the following command (the current working directory is not relevant)
+```bash
+nes-update
+```
+
+If you wish to update manually you can do the following:
 ```bash
 # Go to the project directory
 cd /opt/network-evaluation-service  # or wherever you installed it if you installed without the install script.
+
+# Stop docker containers
+docker compose down
 
 # Pull the latest changes
 git pull
 
 # Rebuild and restart containers
-docker compose up -d --build
+docker compose build
+docker compose up
 ```
-
 
 ## Troubleshooting
 If you encounter issues, you can use the included debug script:
@@ -133,6 +142,19 @@ You can also troubleshoot manually:
    docker compose down
    docker compose up -d
    ```
+
+## Removal
+To remove the program
+- remove the directory /opt/network-evaluation-service/
+- remove the docker containers and volumes
+- remove bash shortcuts for nes-remove and nes-update
+
+There is a script available to simplify uninstallation.
+> **Warning**: This is experimental, and removes directories and docker containers + volumes with root access. It has been tested on a Proxmox LXC and a Raspi with no issues. However, if you are not comfortable please manually remove instead.
+
+```bash
+nes-remove
+```
 
 ## Development
 ### Branch Structure

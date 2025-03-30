@@ -101,9 +101,9 @@ if [ -f "$INSTALL_DIR/.env" ]; then
   read -p "Do you want to keep the existing configuration? (Y/n): " KEEP_ENV
   if [[ "$KEEP_ENV" =~ ^[Nn]$ ]]; then
     cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
-    echo -e "${YELLOW}Please edit the .env file to update configurations:${NC}"
-    echo -e "${YELLOW}  sudo nano $INSTALL_DIR/.env${NC}"
-    read -p "Press Enter after you have updated the configuration..."
+    echo -e "${YELLOW}Default configuration has been created at:${NC} ${INSTALL_DIR}/.env"
+    echo -e "${YELLOW}You can edit the UI port, test parameters, and other variables in this file.${NC}"
+    read -p "Press Enter to continue..."
   fi
 else
   # Check if .env.example exists
@@ -140,10 +140,9 @@ EOF
   sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env"
   sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env"
 
-  echo -e "${YELLOW}Environment file created with secure random credentials.${NC}"
-  echo -e "${YELLOW}Please review and edit if needed:${NC}"
-  echo -e "${YELLOW}  sudo nano $INSTALL_DIR/.env${NC}"
-  read -p "Press Enter after you have reviewed the configuration..."
+  echo -e "${YELLOW}Default configuration has been created at:${NC} ${INSTALL_DIR}/.env"
+  echo -e "${YELLOW}You can edit the UI port, test parameters, and other variables in this file.${NC}"
+  read -p "Press Enter to continue..."
 fi
 
 # Make sure the .env file has all required variables
@@ -391,3 +390,4 @@ echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
 echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh${NC}"
 echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh${NC}"
+echo -e "${RED}WARNING: The uninstall utility is experimental. For safest removal, remove docker containers, volumes, program directory, and bash shortcuts manually.${NC}"
