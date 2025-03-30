@@ -18,13 +18,13 @@ ISP giving you the run-around with your intermitent drops? Having issues with yo
 The installer will automatically check for Docker and Docker Compose and install them if needed.
 
 ## Installation
-### Proxmox LXC Considerations
+### Unique Proxmox LXC Installation Considerations
 Its recommended that you use a Debian 12 LXC. Set up your new container, and then make sure required packages are installed.
 ```bash
 apt update && apt install git curl sudo
 ```
 
-### For all systems
+### Install process for all systems
 Navigate to the directory you prefer to clone source to for install. If you're unsure, usr/local/src is a common convention and will work for this install.
 ```bash
 cd /usr/local/src/
