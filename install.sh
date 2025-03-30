@@ -195,14 +195,18 @@ progress "Creating system-wide command shortcuts..."
 # Create shortcut for update script
 cat > /usr/local/bin/nes-update << EOF
 #!/bin/bash
-$INSTALL_DIR/update.sh
+# Ensure we're in the correct directory regardless of where the command is run from
+cd $INSTALL_DIR
+./update.sh
 EOF
 chmod +x /usr/local/bin/nes-update
 
 # Create shortcut for uninstall script
 cat > /usr/local/bin/nes-remove << EOF
 #!/bin/bash
-$INSTALL_DIR/uninstall.sh
+# Ensure we're in the correct directory regardless of where the command is run from
+cd $INSTALL_DIR
+./uninstall.sh
 EOF
 chmod +x /usr/local/bin/nes-remove
 
