@@ -96,6 +96,53 @@ button, .btn {
   margin-bottom: var(--space-lg);
 }
 
+/* App Layout */
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: var(--bg-light);
+  color: var(--text-white);
+  padding: var(--space-md);
+  text-align: center;
+}
+
+main {
+  flex: 1;
+  padding: var(--space-xl);
+  max-width: 1200px;
+  margin: var(--space-xl) auto 0;
+  width: 100%;
+}
+
+footer {
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
+}
+
+footer p {
+  margin: 0;
+}
+
+/* Stat components */
+.stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-secondary);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
 /* Utility classes */
 .text-center {
   text-align: center;
