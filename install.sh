@@ -208,33 +208,158 @@ cd $INSTALL_DIR
 EOF
 chmod +x /usr/local/bin/nes-update
 
-# Create shortcut for uninstall script
-cat > /usr/local/bin/nes-remove << EOF
+# Create a completely self-contained uninstall script that doesn't depend on files in the installation dir
+cat > /usr/local/bin/nes-remove << 'EOF'
 #!/bin/bash
+# Network Evaluation Service - Uninstall Script
+
 # Check if script is run with sudo
-if [ \$EUID -ne 0 ]; then
+if [ $EUID -ne 0 ]; then
   echo -e "\033[1;33mThis command requires root privileges. Running with sudo...\033[0m"
-  exec sudo "\$0" "\$@"
-  exit \$?
+  exec sudo "$0" "$@"
+  exit $?
 fi
 
-# Create a temporary copy of the uninstall script to avoid removing the script we're executing
-TEMP_DIR=\$(mktemp -d)
-TEMP_SCRIPT="\$TEMP_DIR/temp_uninstall.sh"
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# Copy the script
-cp $INSTALL_DIR/uninstall.sh \$TEMP_SCRIPT
-chmod +x \$TEMP_SCRIPT
+# Default installation directory
+INSTALL_DIR="/opt/network-evaluation-service"
 
-# Pass the installation directory as parameter to make sure it's always correct
-INSTALL_PATH="$INSTALL_DIR"
+# Print header
+echo -e "${GREEN}============================================${NC}"
+echo -e "${GREEN}   Network Evaluation Service Uninstaller   ${NC}"
+echo -e "${GREEN}============================================${NC}"
 
-# Execute the temporary copy 
-# (The script has the logic to handle the installation directory properly)
-\$TEMP_SCRIPT
+# Function to display progress
+progress() {
+  echo -e "${YELLOW}➤ $1${NC}"
+}
 
-# Clean up temporary directory (this might not execute if the uninstall removes the entire directory structure)
-rm -rf \$TEMP_DIR &>/dev/null
+# Function to display success
+success() {
+  echo -e "${GREEN}✓ $1${NC}"
+}
+
+# Confirm uninstallation
+echo -e "${RED}WARNING: This will completely remove Network Evaluation Service and all its data.${NC}"
+read -p "Are you sure you want to continue? (y/N): " CONFIRM
+if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+  echo -e "${YELLOW}Uninstallation cancelled.${NC}"
+  exit 0
+fi
+
+# Custom installation location
+read -p "Enter installation directory [$INSTALL_DIR]: " CUSTOM_DIR
+INSTALL_DIR=${CUSTOM_DIR:-$INSTALL_DIR}
+
+# Check if directory exists
+if [ ! -d "$INSTALL_DIR" ]; then
+  echo -e "${RED}Could not find $INSTALL_DIR. Exiting.${NC}"
+  exit 1
+fi
+
+# Save docker-compose.yml path before we enter the directory
+COMPOSE_FILE="$INSTALL_DIR/docker-compose.yml"
+
+# Stop and remove containers, networks, and volumes
+if [ -f "$COMPOSE_FILE" ]; then
+  progress "Stopping and removing Docker containers, networks, and volumes..."
+  
+  # We use pushd/popd to safely change directory while keeping track of where we were
+  pushd "$INSTALL_DIR" > /dev/null
+  
+  # The -v flag removes volumes defined in the compose file
+  docker compose down -v
+  
+  # Get the directory name for container prefix (used by docker-compose)
+  DIR_NAME=$(basename "$INSTALL_DIR")
+  
+  # Return to original directory immediately after docker compose command
+  popd > /dev/null
+  
+  # Remove specific containers if they still exist
+  progress "Checking for remaining containers..."
+  for CONTAINER in "${DIR_NAME}-db-1" "${DIR_NAME}-web-1" "${DIR_NAME}-test-1" "${DIR_NAME}-db-init-1"; do
+    if docker ps -a --format '{{.Names}}' | grep -q "^$CONTAINER$"; then
+      echo "Removing container: $CONTAINER"
+      docker rm -f "$CONTAINER"
+    fi
+  done
+  
+  # Remove the specific volume
+  progress "Checking for remaining volumes..."
+  if docker volume ls --format '{{.Name}}' | grep -q "^${DIR_NAME}_postgres_data$"; then
+    echo "Removing volume: ${DIR_NAME}_postgres_data"
+    docker volume rm "${DIR_NAME}_postgres_data"
+  fi
+  
+  # Also check for any other volumes with a similar name pattern
+  OTHER_VOLUMES=$(docker volume ls --format '{{.Name}}' | grep "network.*evaluation.*postgres")
+  if [ ! -z "$OTHER_VOLUMES" ]; then
+    echo "Removing other related volumes:"
+    for VOL in $OTHER_VOLUMES; do
+      echo "  - $VOL"
+      docker volume rm "$VOL"
+    done
+  fi
+  
+  success "Docker resources removed"
+fi
+
+# Remove bash shortcuts
+progress "Removing command shortcuts..."
+if [ -f "/usr/local/bin/nes-update" ]; then
+  rm -f /usr/local/bin/nes-update
+  echo "Removed nes-update command"
+fi
+
+# Don't remove ourselves yet - save that for last
+NES_REMOVE_PATH="/usr/local/bin/nes-remove"
+
+# Remove the installation directory
+progress "Removing installation directory..."
+echo "Attempting to remove directory: $INSTALL_DIR"
+
+# First try with regular rm
+if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
+  echo "Standard removal failed, trying with additional permissions..."
+  
+  # Try to fix permissions and retry
+  find "$INSTALL_DIR" -type d -exec chmod 755 {} \; 2>/dev/null
+  find "$INSTALL_DIR" -type f -exec chmod 644 {} \; 2>/dev/null
+  
+  # Try again with removal
+  if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
+    echo "Using more forceful removal methods..."
+    # Last resort: use a more forceful command combination
+    find "$INSTALL_DIR" -delete 2>/dev/null
+    rm -rf "$INSTALL_DIR" 2>/dev/null
+  fi
+fi
+
+# Verify removal
+if [ -d "$INSTALL_DIR" ]; then
+  echo -e "${RED}Warning: Could not completely remove $INSTALL_DIR${NC}"
+  echo -e "${YELLOW}You may need to manually remove it with: sudo rm -rf $INSTALL_DIR${NC}"
+else
+  success "Installation directory removed"
+fi
+
+# Now remove ourselves as the very last step
+if [ -f "$NES_REMOVE_PATH" ]; then
+  rm -f "$NES_REMOVE_PATH"
+  echo "Removed nes-remove command"
+fi
+success "Command shortcuts removed"
+
+echo -e "\n${GREEN}============================================${NC}"
+echo -e "${GREEN}    Uninstallation completed successfully!  ${NC}"
+echo -e "${GREEN}============================================${NC}"
+echo -e "\nNetwork Evaluation Service has been completely removed from your system."
 EOF
 chmod +x /usr/local/bin/nes-remove
 
