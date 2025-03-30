@@ -195,6 +195,13 @@ progress "Creating system-wide command shortcuts..."
 # Create shortcut for update script
 cat > /usr/local/bin/nes-update << EOF
 #!/bin/bash
+# Check if script is run with sudo
+if [ \$EUID -ne 0 ]; then
+  echo -e "\033[1;33mThis command requires root privileges. Running with sudo...\033[0m"
+  exec sudo "\$0" "\$@"
+  exit \$?
+fi
+
 # Ensure we're in the correct directory regardless of where the command is run from
 cd $INSTALL_DIR
 ./update.sh
@@ -204,6 +211,13 @@ chmod +x /usr/local/bin/nes-update
 # Create shortcut for uninstall script
 cat > /usr/local/bin/nes-remove << EOF
 #!/bin/bash
+# Check if script is run with sudo
+if [ \$EUID -ne 0 ]; then
+  echo -e "\033[1;33mThis command requires root privileges. Running with sudo...\033[0m"
+  exec sudo "\$0" "\$@"
+  exit \$?
+fi
+
 # Ensure we're in the correct directory regardless of where the command is run from
 cd $INSTALL_DIR
 ./uninstall.sh
@@ -228,5 +242,5 @@ echo -e "  - Docker Compose file: ${YELLOW}$INSTALL_DIR/docker-compose.yml${NC}"
 echo -e "\nUseful commands:"
 echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
-echo -e "  - Update services: ${YELLOW}sudo nes-update${NC} or ${YELLOW}sudo $INSTALL_DIR/update.sh${NC}"
-echo -e "  - Uninstall service: ${YELLOW}sudo nes-remove${NC} or ${YELLOW}sudo $INSTALL_DIR/uninstall.sh${NC}"
+echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh${NC}"
+echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh${NC}"
