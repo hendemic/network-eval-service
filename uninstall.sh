@@ -105,8 +105,32 @@ success "Command shortcuts removed"
 
 # Remove the installation directory
 progress "Removing installation directory..."
-rm -rf "$INSTALL_DIR"
-success "Installation directory removed"
+echo "Attempting to remove directory: $INSTALL_DIR"
+
+# First try with regular rm
+if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
+  echo "Standard removal failed, trying with additional permissions..."
+  
+  # Try to fix permissions and retry
+  find "$INSTALL_DIR" -type d -exec chmod 755 {} \; 2>/dev/null
+  find "$INSTALL_DIR" -type f -exec chmod 644 {} \; 2>/dev/null
+  
+  # Try again with removal
+  if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
+    echo "Using more forceful removal methods..."
+    # Last resort: use a more forceful command combination
+    find "$INSTALL_DIR" -delete 2>/dev/null
+    rm -rf "$INSTALL_DIR" 2>/dev/null
+  fi
+fi
+
+# Verify removal
+if [ -d "$INSTALL_DIR" ]; then
+  echo -e "${RED}Warning: Could not completely remove $INSTALL_DIR${NC}"
+  echo -e "${YELLOW}You may need to manually remove it with: sudo rm -rf $INSTALL_DIR${NC}"
+else
+  success "Installation directory removed"
+fi
 
 echo -e "\n${GREEN}============================================${NC}"
 echo -e "${GREEN}    Uninstallation completed successfully!  ${NC}"

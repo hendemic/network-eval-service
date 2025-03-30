@@ -218,9 +218,23 @@ if [ \$EUID -ne 0 ]; then
   exit \$?
 fi
 
-# Ensure we're in the correct directory regardless of where the command is run from
-cd $INSTALL_DIR
-./uninstall.sh
+# Create a temporary copy of the uninstall script to avoid removing the script we're executing
+TEMP_DIR=\$(mktemp -d)
+TEMP_SCRIPT="\$TEMP_DIR/temp_uninstall.sh"
+
+# Copy the script
+cp $INSTALL_DIR/uninstall.sh \$TEMP_SCRIPT
+chmod +x \$TEMP_SCRIPT
+
+# Pass the installation directory as parameter to make sure it's always correct
+INSTALL_PATH="$INSTALL_DIR"
+
+# Execute the temporary copy 
+# (The script has the logic to handle the installation directory properly)
+\$TEMP_SCRIPT
+
+# Clean up temporary directory (this might not execute if the uninstall removes the entire directory structure)
+rm -rf \$TEMP_DIR &>/dev/null
 EOF
 chmod +x /usr/local/bin/nes-remove
 
