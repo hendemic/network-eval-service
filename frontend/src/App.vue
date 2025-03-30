@@ -4,7 +4,10 @@
       <router-view />
     </main>
     <footer>
-      <p>Network Evaluation Service &copy; {{ new Date().getFullYear() }}</p>
+      <p>
+        Network Evaluation Service &copy; {{ new Date().getFullYear() }} | Made
+        with ❤️ in Seattle.
+      </p>
     </footer>
   </div>
 </template>
