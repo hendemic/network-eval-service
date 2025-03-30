@@ -33,6 +33,14 @@ progress "Pulling latest changes from repository..."
 git pull
 success "Repository updated"
 
+# Copy VERSION file to frontend
+if [ -f "VERSION" ]; then
+  progress "Updating version information..."
+  mkdir -p frontend/public
+  cp VERSION frontend/public/
+  success "Version information updated"
+fi
+
 # Rebuild and start containers
 progress "Rebuilding and starting containers..."
 docker compose up -d --build

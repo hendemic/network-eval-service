@@ -170,6 +170,14 @@ success "Scripts prepared"
 # 5. Build and run Docker containers
 progress "Building Docker containers..."
 cd "$INSTALL_DIR"
+
+# Ensure the VERSION file is copied to the frontend static files
+if [ -f "$INSTALL_DIR/VERSION" ]; then
+  mkdir -p "$INSTALL_DIR/frontend/public"
+  cp "$INSTALL_DIR/VERSION" "$INSTALL_DIR/frontend/public/"
+  success "VERSION file copied to frontend"
+fi
+
 docker compose build
 success "Docker containers built successfully"
 
