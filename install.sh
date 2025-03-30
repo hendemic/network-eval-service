@@ -164,6 +164,7 @@ success "Environment variables configured"
 # 4. Make scripts executable
 chmod +x "$INSTALL_DIR/docker/init-db.sh"
 chmod +x "$INSTALL_DIR/update.sh"
+chmod +x "$INSTALL_DIR/uninstall.sh"
 success "Scripts prepared"
 
 # 5. Build and run Docker containers
@@ -188,28 +189,24 @@ else
   echo -e "${YELLOW}  cd $INSTALL_DIR && docker compose logs${NC}"
 fi
 
-# 7. Create systemd service to start containers on boot
-progress "Creating systemd service for automatic startup..."
-cat > /etc/systemd/system/network-evaluation.service << EOF
-[Unit]
-Description=Network Evaluation Service Docker Containers
-After=docker.service
-Requires=docker.service
+# 7. Create bash shortcuts for easy update and uninstall
+progress "Creating system-wide command shortcuts..."
 
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-WorkingDirectory=$INSTALL_DIR
-ExecStart=/usr/bin/docker compose up -d
-ExecStop=/usr/bin/docker compose down
-
-[Install]
-WantedBy=multi-user.target
+# Create shortcut for update script
+cat > /usr/local/bin/nes-update << EOF
+#!/bin/bash
+$INSTALL_DIR/update.sh
 EOF
+chmod +x /usr/local/bin/nes-update
 
-systemctl daemon-reload
-systemctl enable network-evaluation.service
-success "Systemd service created and enabled"
+# Create shortcut for uninstall script
+cat > /usr/local/bin/nes-remove << EOF
+#!/bin/bash
+$INSTALL_DIR/uninstall.sh
+EOF
+chmod +x /usr/local/bin/nes-remove
+
+success "Command shortcuts created: nes-update and nes-remove"
 
 # 8. Provide final instructions
 WEB_PORT=$(grep "WEB_PORT" "$INSTALL_DIR/.env" | cut -d '=' -f2 || echo "5000")
@@ -227,4 +224,5 @@ echo -e "  - Docker Compose file: ${YELLOW}$INSTALL_DIR/docker-compose.yml${NC}"
 echo -e "\nUseful commands:"
 echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
-echo -e "  - Update services: ${YELLOW}cd $INSTALL_DIR && ./update.sh${NC}"
+echo -e "  - Update services: ${YELLOW}sudo nes-update${NC} or ${YELLOW}sudo $INSTALL_DIR/update.sh${NC}"
+echo -e "  - Uninstall service: ${YELLOW}sudo nes-remove${NC} or ${YELLOW}sudo $INSTALL_DIR/uninstall.sh${NC}"
