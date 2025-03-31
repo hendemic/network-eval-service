@@ -457,11 +457,14 @@ else
 fi
 
 # 7. Create bash shortcuts for easy update and uninstall
-progress "Creating system-wide command shortcuts..."
-debug "Creating nes-update command..."
+progress "Setting up command shortcuts..."
+read -p "Would you like to set up system-wide command shortcuts (nes-update and nes-remove)? (Y/n): " SETUP_SHORTCUTS
 
-# Create shortcut for update script
-cat > /usr/local/bin/nes-update << EOF
+if [[ ! "$SETUP_SHORTCUTS" =~ ^[Nn]$ ]]; then
+  debug "Creating nes-update command..."
+  
+  # Create shortcut for update script
+  cat > /usr/local/bin/nes-update << EOF
 #!/bin/bash
 # Check if script is run with sudo
 if [ \$EUID -ne 0 ]; then
@@ -474,11 +477,11 @@ fi
 cd $INSTALL_DIR
 ./update.sh \$@
 EOF
-chmod +x /usr/local/bin/nes-update
-
-# Create a completely self-contained uninstall script that doesn't depend on files in the installation dir
-debug "Creating nes-remove command..."
-cat > /usr/local/bin/nes-remove << 'EOF'
+  chmod +x /usr/local/bin/nes-update
+  
+  # Create a completely self-contained uninstall script that doesn't depend on files in the installation dir
+  debug "Creating nes-remove command..."
+  cat > /usr/local/bin/nes-remove << 'EOF'
 #!/bin/bash
 # Network Evaluation Service - Uninstall Script
 
@@ -677,7 +680,10 @@ echo -e "\nNetwork Evaluation Service has been completely removed from your syst
 EOF
 chmod +x /usr/local/bin/nes-remove
 
-success "Command shortcuts created: nes-update and nes-remove"
+  success "Command shortcuts created: nes-update and nes-remove"
+else
+  echo -e "${YELLOW}Skipping command shortcuts setup.${NC}"
+fi
 
 # 8. Provide final instructions
 debug "Gathering configuration information for final message..."
@@ -696,7 +702,19 @@ echo -e "  - Docker Compose file: ${YELLOW}$INSTALL_DIR/docker-compose.yml${NC}"
 echo -e "\nUseful commands:"
 echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
-echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh -v${NC}"
-echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh -v${NC}"
-echo -e "    - ${RED}WARNING: The uninstall utility is experimental.${NC}"
-echo -e "  - Add -v flag for verbose output: ${YELLOW}nes-update -v${NC} or ${YELLOW}nes-remove -v${NC}"
+
+if [[ ! "$SETUP_SHORTCUTS" =~ ^[Nn]$ ]]; then
+  echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh -v${NC}"
+  echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh -v${NC}"
+  echo -e "    - ${RED}WARNING: The uninstall utility is experimental.${NC}"
+  echo -e "  - Add -v flag for verbose output: ${YELLOW}nes-update -v${NC} or ${YELLOW}nes-remove -v${NC}"
+else
+  echo -e "  - Update services: ${YELLOW}$INSTALL_DIR/update.sh -v${NC}"
+  echo -e "  - Uninstall service: ${YELLOW}$INSTALL_DIR/uninstall.sh -v${NC}"
+  echo -e "    - ${RED}WARNING: The uninstall utility is experimental.${NC}"
+  echo -e "  - Add -v flag for verbose output: ${YELLOW}$INSTALL_DIR/update.sh -v${NC}"
+fi
+
+# Set working directory to installation directory
+cd "$INSTALL_DIR"
+echo -e "\n${GREEN}Changed working directory to:${NC} ${YELLOW}$(pwd)${NC}"
