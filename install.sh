@@ -265,20 +265,24 @@ if [ -f "$INSTALL_DIR/.env" ]; then
   echo -e "${YELLOW}Environment file already exists.${NC}"
   read -p "Do you want to keep the existing configuration? (Y/n): " KEEP_ENV
   if [[ "$KEEP_ENV" =~ ^[Nn]$ ]]; then
-    debug "Copying example environment file..."
-    cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
-    echo -e "${YELLOW}Default configuration has been created at:${NC} ${INSTALL_DIR}/.env"
-    echo -e "${YELLOW}You can edit the UI port, test parameters, and other variables in this file.${NC}"
-    read -p "Press Enter to continue..."
+    debug "Creating new configuration..."
+    # Will create a new configuration below
+    CREATE_NEW_CONFIG=1
   else
     debug "Keeping existing environment configuration."
+    CREATE_NEW_CONFIG=0
   fi
 else
-  # Check if .env.example exists
+  # Fresh installation, no existing config
+  CREATE_NEW_CONFIG=1
+fi
+
+if [ $CREATE_NEW_CONFIG -eq 1 ]; then
+  # Create base configuration from example or default
   if [ ! -f "$INSTALL_DIR/.env.example" ]; then
     debug "No example environment file found. Creating default configuration..."
-    echo -e "${YELLOW}Creating default .env file since .env.example doesn't exist${NC}"
-    cat > "$INSTALL_DIR/.env" << EOF
+    # Create temporary default configuration
+    cat > "$INSTALL_DIR/.env.tmp" << EOF
 # Database configuration
 POSTGRES_USER=netmon
 POSTGRES_PASSWORD=netmon_password
@@ -298,23 +302,61 @@ TEST_COUNT=400
 TEST_INTERVAL=0.1
 EOF
   else
-    debug "Copying example environment file..."
-    cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+    debug "Using example environment file as template..."
+    cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env.tmp"
   fi
-
+  
   # Generate a secure random password and secret key
   debug "Generating secure random credentials..."
   RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -d "=+/")
   RANDOM_SECRET=$(openssl rand -hex 24)
-
-  # Update the password and secret key in .env file
+  
+  # Update the password and secret key in temporary env file
   debug "Updating credentials in environment file..."
-  sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env"
-  sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env"
-
-  echo -e "${YELLOW}Default configuration has been created at:${NC} ${INSTALL_DIR}/.env"
-  echo -e "${YELLOW}You can edit the UI port, test parameters, and other variables in this file.${NC}"
-  read -p "Press Enter to continue..."
+  sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env.tmp"
+  sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env.tmp"
+  
+  # Ask if user wants to customize configuration
+  echo -e "${YELLOW}Network Evaluation Service Configuration${NC}"
+  read -p "Would you like to customize the configuration? (y/N): " CUSTOMIZE_CONFIG
+  
+  if [[ "$CUSTOMIZE_CONFIG" =~ ^[Yy]$ ]]; then
+    echo -e "${GREEN}--- Configuration Customization ---${NC}"
+    echo -e "Press Enter to accept the default value shown in [brackets]."
+    
+    # Extract default values from the template
+    DEFAULT_WEB_PORT=$(grep "WEB_PORT" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "5000")
+    DEFAULT_TEST_TARGET=$(grep "TEST_TARGET" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "1.1.1.1")
+    DEFAULT_TEST_COUNT=$(grep "TEST_COUNT" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "400")
+    DEFAULT_TEST_INTERVAL=$(grep "TEST_INTERVAL" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "0.1")
+    
+    # Collect user inputs with defaults
+    read -p "Web interface port [$DEFAULT_WEB_PORT]: " WEB_PORT
+    WEB_PORT=${WEB_PORT:-$DEFAULT_WEB_PORT}
+    
+    read -p "Ping target (IP or hostname) [$DEFAULT_TEST_TARGET]: " TEST_TARGET
+    TEST_TARGET=${TEST_TARGET:-$DEFAULT_TEST_TARGET}
+    
+    read -p "Number of pings per test [$DEFAULT_TEST_COUNT]: " TEST_COUNT
+    TEST_COUNT=${TEST_COUNT:-$DEFAULT_TEST_COUNT}
+    
+    read -p "Interval between pings in seconds [$DEFAULT_TEST_INTERVAL]: " TEST_INTERVAL
+    TEST_INTERVAL=${TEST_INTERVAL:-$DEFAULT_TEST_INTERVAL}
+    
+    # Update the temporary .env file with user values
+    sed -i "s/WEB_PORT=.*$/WEB_PORT=$WEB_PORT/g" "$INSTALL_DIR/.env.tmp"
+    sed -i "s/TEST_TARGET=.*$/TEST_TARGET=$TEST_TARGET/g" "$INSTALL_DIR/.env.tmp"
+    sed -i "s/TEST_COUNT=.*$/TEST_COUNT=$TEST_COUNT/g" "$INSTALL_DIR/.env.tmp"
+    sed -i "s/TEST_INTERVAL=.*$/TEST_INTERVAL=$TEST_INTERVAL/g" "$INSTALL_DIR/.env.tmp"
+    
+    echo -e "${GREEN}Configuration customized successfully.${NC}"
+  else
+    echo -e "${YELLOW}Using default configuration values.${NC}"
+  fi
+  
+  # Move the temporary file to the final location
+  mv "$INSTALL_DIR/.env.tmp" "$INSTALL_DIR/.env"
+  echo -e "${YELLOW}Configuration has been saved to:${NC} ${INSTALL_DIR}/.env"
 fi
 
 # Make sure the .env file has all required variables
