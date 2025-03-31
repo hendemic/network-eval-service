@@ -14,10 +14,39 @@ REPO_URL="https://github.com/hendemic/network-eval-service.git"
 # Default installation directory
 INSTALL_DIR="/opt/network-evaluation-service"
 
+# Default verbosity level (0 = compact, 1 = verbose)
+VERBOSE=0
+
+# Parse command line arguments
+usage() {
+  echo "Usage: $0 [-v|--verbose] [-h|--help]"
+  echo "  -v, --verbose   Display detailed installation information"
+  echo "  -h, --help      Display this help message"
+  exit 1
+}
+
+# Parse command-line options
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -v|--verbose)
+      VERBOSE=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      echo "Unknown option: $1"
+      usage
+      ;;
+  esac
+done
+
 # Print header
 echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}   Network Evaluation Service Installer     ${NC}"
 echo -e "${GREEN}============================================${NC}"
+echo -e "Running in $([ $VERBOSE -eq 1 ] && echo 'verbose' || echo 'compact') mode. Use -v for detailed output."
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
@@ -25,14 +54,30 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# Function to display progress
+# Function to display progress (always shown)
 progress() {
   echo -e "${YELLOW}➤ $1${NC}"
 }
 
-# Function to display success
+# Function to display success (always shown)
 success() {
   echo -e "${GREEN}✓ $1${NC}"
+}
+
+# Function to display debug information (only in verbose mode)
+debug() {
+  if [ $VERBOSE -eq 1 ]; then
+    echo -e "  $1"
+  fi
+}
+
+# Function to execute commands with appropriate verbosity
+run_cmd() {
+  if [ $VERBOSE -eq 1 ]; then
+    "$@"
+  else
+    "$@" > /dev/null
+  fi
 }
 
 # Function to check for required tools
@@ -40,24 +85,43 @@ check_requirements() {
   progress "Checking requirements..."
 
   # Check if Docker is installed
+  debug "Checking for Docker installation..."
   if ! command -v docker &> /dev/null; then
     echo -e "${RED}Docker is not installed. Installing Docker...${NC}"
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
+    if [ $VERBOSE -eq 1 ]; then
+      curl -fsSL https://get.docker.com -o get-docker.sh
+      sh get-docker.sh
+    else
+      curl -fsSL https://get.docker.com -o get-docker.sh > /dev/null
+      sh get-docker.sh > /dev/null
+    fi
     rm get-docker.sh
+  else
+    debug "Docker is already installed."
   fi
 
   # Check if Docker Compose is installed
+  debug "Checking for Docker Compose installation..."
   if ! command -v docker compose &> /dev/null; then
     echo -e "${RED}Docker Compose plugin is not installed. Installing Docker Compose...${NC}"
-    apt-get update
-    apt-get install -y docker-compose-plugin
+    if [ $VERBOSE -eq 1 ]; then
+      apt-get update
+      apt-get install -y docker-compose-plugin
+    else
+      apt-get update > /dev/null
+      apt-get install -y docker-compose-plugin > /dev/null
+    fi
+  else
+    debug "Docker Compose is already installed."
   fi
 
   # Verify docker is running
+  debug "Verifying Docker service is running..."
   if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Docker is not running. Starting Docker...${NC}"
     systemctl start docker
+  else
+    debug "Docker service is running."
   fi
 
   success "All requirements satisfied"
@@ -85,11 +149,23 @@ progress "Cloning repository from $REPO_URL ($BRANCH_NAME branch)..."
 if [ -d "$INSTALL_DIR" ]; then
   echo -e "${YELLOW}Directory already exists. Updating...${NC}"
   cd "$INSTALL_DIR"
-  git fetch
-  git checkout $GIT_BRANCH
-  git pull origin $GIT_BRANCH
+  debug "Fetching latest updates..."
+  if [ $VERBOSE -eq 1 ]; then
+    git fetch
+    git checkout $GIT_BRANCH
+    git pull origin $GIT_BRANCH
+  else
+    git fetch > /dev/null 2>&1
+    git checkout $GIT_BRANCH > /dev/null 2>&1
+    git pull origin $GIT_BRANCH > /dev/null 2>&1
+  fi
 else
-  git clone -b $GIT_BRANCH $REPO_URL "$INSTALL_DIR"
+  debug "Cloning repository to $INSTALL_DIR..."
+  if [ $VERBOSE -eq 1 ]; then
+    git clone -b $GIT_BRANCH $REPO_URL "$INSTALL_DIR"
+  else
+    git clone -b $GIT_BRANCH $REPO_URL "$INSTALL_DIR" > /dev/null 2>&1
+  fi
   cd "$INSTALL_DIR"
 fi
 success "Repository cloned successfully ($BRANCH_NAME branch)"
@@ -100,14 +176,18 @@ if [ -f "$INSTALL_DIR/.env" ]; then
   echo -e "${YELLOW}Environment file already exists.${NC}"
   read -p "Do you want to keep the existing configuration? (Y/n): " KEEP_ENV
   if [[ "$KEEP_ENV" =~ ^[Nn]$ ]]; then
+    debug "Copying example environment file..."
     cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
     echo -e "${YELLOW}Default configuration has been created at:${NC} ${INSTALL_DIR}/.env"
     echo -e "${YELLOW}You can edit the UI port, test parameters, and other variables in this file.${NC}"
     read -p "Press Enter to continue..."
+  else
+    debug "Keeping existing environment configuration."
   fi
 else
   # Check if .env.example exists
   if [ ! -f "$INSTALL_DIR/.env.example" ]; then
+    debug "No example environment file found. Creating default configuration..."
     echo -e "${YELLOW}Creating default .env file since .env.example doesn't exist${NC}"
     cat > "$INSTALL_DIR/.env" << EOF
 # Database configuration
@@ -129,14 +209,17 @@ TEST_COUNT=400
 TEST_INTERVAL=0.1
 EOF
   else
+    debug "Copying example environment file..."
     cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
   fi
 
   # Generate a secure random password and secret key
+  debug "Generating secure random credentials..."
   RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -d "=+/")
   RANDOM_SECRET=$(openssl rand -hex 24)
 
   # Update the password and secret key in .env file
+  debug "Updating credentials in environment file..."
   sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env"
   sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env"
 
@@ -146,21 +229,27 @@ EOF
 fi
 
 # Make sure the .env file has all required variables
+debug "Verifying required environment variables..."
 if ! grep -q "POSTGRES_USER" "$INSTALL_DIR/.env"; then
+  debug "Adding missing POSTGRES_USER variable..."
   echo "POSTGRES_USER=netmon" >> "$INSTALL_DIR/.env"
 fi
 if ! grep -q "POSTGRES_DB" "$INSTALL_DIR/.env"; then
+  debug "Adding missing POSTGRES_DB variable..."
   echo "POSTGRES_DB=network_tests" >> "$INSTALL_DIR/.env"
 fi
 if ! grep -q "POSTGRES_SCHEMA" "$INSTALL_DIR/.env"; then
+  debug "Adding missing POSTGRES_SCHEMA variable..."
   echo "POSTGRES_SCHEMA=network_eval" >> "$INSTALL_DIR/.env"
 fi
 
 # Make the env file readable only by root
+debug "Setting secure permissions on environment file..."
 chmod 600 "$INSTALL_DIR/.env"
 success "Environment variables configured"
 
 # 4. Make scripts executable
+debug "Setting executable permissions on scripts..."
 chmod +x "$INSTALL_DIR/docker/init-db.sh"
 chmod +x "$INSTALL_DIR/update.sh"
 chmod +x "$INSTALL_DIR/uninstall.sh"
@@ -172,32 +261,55 @@ cd "$INSTALL_DIR"
 
 # Ensure the VERSION file is copied to the frontend static files
 if [ -f "$INSTALL_DIR/VERSION" ]; then
+  debug "Copying VERSION file to frontend..."
   mkdir -p "$INSTALL_DIR/frontend/public"
   cp "$INSTALL_DIR/VERSION" "$INSTALL_DIR/frontend/public/"
   success "VERSION file copied to frontend"
 fi
 
-docker compose build
+debug "Building Docker containers (this may take several minutes)..."
+if [ $VERBOSE -eq 1 ]; then
+  docker compose build
+else
+  docker compose build > /dev/null
+fi
 success "Docker containers built successfully"
 
 progress "Starting Docker containers..."
-docker compose up -d
+debug "Starting services with docker compose..."
+if [ $VERBOSE -eq 1 ]; then
+  docker compose up -d
+else
+  docker compose up -d > /dev/null
+fi
 success "Docker containers started successfully"
 
 # 6. Check if containers are running
 progress "Checking container status..."
+debug "Counting running containers..."
 RUNNING_CONTAINERS=$(docker compose ps --services --filter "status=running" | wc -l)
 # We expect at least 3 containers: db, web, test
 # The db-init container will exit after successful completion
 if [ "$RUNNING_CONTAINERS" -ge 3 ]; then
   success "All containers are running"
+  if [ $VERBOSE -eq 1 ]; then
+    echo "Running containers:"
+    docker compose ps
+  fi
 else
   echo -e "${RED}Some containers failed to start. Please check:${NC}"
   echo -e "${YELLOW}  cd $INSTALL_DIR && docker compose logs${NC}"
+  if [ $VERBOSE -eq 1 ]; then
+    echo "Container status:"
+    docker compose ps
+    echo "Last 20 log lines:"
+    docker compose logs --tail=20
+  fi
 fi
 
 # 7. Create bash shortcuts for easy update and uninstall
 progress "Creating system-wide command shortcuts..."
+debug "Creating nes-update command..."
 
 # Create shortcut for update script
 cat > /usr/local/bin/nes-update << EOF
@@ -211,14 +323,43 @@ fi
 
 # Ensure we're in the correct directory regardless of where the command is run from
 cd $INSTALL_DIR
-./update.sh
+./update.sh \$@
 EOF
 chmod +x /usr/local/bin/nes-update
 
 # Create a completely self-contained uninstall script that doesn't depend on files in the installation dir
+debug "Creating nes-remove command..."
 cat > /usr/local/bin/nes-remove << 'EOF'
 #!/bin/bash
 # Network Evaluation Service - Uninstall Script
+
+# Default verbosity level (0 = compact, 1 = verbose)
+VERBOSE=0
+
+# Parse command line arguments
+usage() {
+  echo "Usage: $0 [-v|--verbose] [-h|--help]"
+  echo "  -v, --verbose   Display detailed uninstallation information"
+  echo "  -h, --help      Display this help message"
+  exit 1
+}
+
+# Parse command-line options
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -v|--verbose)
+      VERBOSE=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      echo "Unknown option: $1"
+      usage
+      ;;
+  esac
+done
 
 # Check if script is run with sudo
 if [ $EUID -ne 0 ]; then
@@ -240,15 +381,32 @@ INSTALL_DIR="/opt/network-evaluation-service"
 echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}   Network Evaluation Service Uninstaller   ${NC}"
 echo -e "${GREEN}============================================${NC}"
+echo -e "Running in \$([ \$VERBOSE -eq 1 ] && echo 'verbose' || echo 'compact') mode. Use -v for detailed output."
 
-# Function to display progress
+# Function to display progress (always shown)
 progress() {
   echo -e "${YELLOW}➤ $1${NC}"
 }
 
-# Function to display success
+# Function to display success (always shown)
 success() {
   echo -e "${GREEN}✓ $1${NC}"
+}
+
+# Function to display debug information (only in verbose mode)
+debug() {
+  if [ $VERBOSE -eq 1 ]; then
+    echo -e "  $1"
+  fi
+}
+
+# Function to execute commands with appropriate verbosity
+run_cmd() {
+  if [ $VERBOSE -eq 1 ]; then
+    "$@"
+  else
+    "$@" > /dev/null
+  fi
 }
 
 # Confirm uninstallation
@@ -373,6 +531,7 @@ chmod +x /usr/local/bin/nes-remove
 success "Command shortcuts created: nes-update and nes-remove"
 
 # 8. Provide final instructions
+debug "Gathering configuration information for final message..."
 WEB_PORT=$(grep "WEB_PORT" "$INSTALL_DIR/.env" | cut -d '=' -f2 || echo "5000")
 HOST_IP=$(hostname -I | awk '{print $1}')
 
@@ -388,6 +547,7 @@ echo -e "  - Docker Compose file: ${YELLOW}$INSTALL_DIR/docker-compose.yml${NC}"
 echo -e "\nUseful commands:"
 echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
 echo -e "  - Restart services: ${YELLOW}cd $INSTALL_DIR && docker compose restart${NC}"
-echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh${NC}"
-echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh${NC}"
+echo -e "  - Update services: ${YELLOW}nes-update${NC} or ${YELLOW}$INSTALL_DIR/update.sh -v${NC}"
+echo -e "  - Uninstall service: ${YELLOW}nes-remove${NC} or ${YELLOW}$INSTALL_DIR/uninstall.sh -v${NC}"
 echo -e "    - ${RED}WARNING: The uninstall utility is experimental.${NC}"
+echo -e "  - Add -v flag for verbose output: ${YELLOW}nes-update -v${NC} or ${YELLOW}nes-remove -v${NC}"
