@@ -715,6 +715,3 @@ else
   echo -e "  - Add -v flag for verbose output: ${YELLOW}$INSTALL_DIR/update.sh -v${NC}"
 fi
 
-# Set working directory to installation directory
-cd "$INSTALL_DIR"
-echo -e "\n${GREEN}Changed working directory to:${NC} ${YELLOW}$(pwd)${NC}"
