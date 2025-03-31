@@ -317,48 +317,14 @@ EOF
   sed -i "s/POSTGRES_PASSWORD=.*$/POSTGRES_PASSWORD=$RANDOM_PASSWORD/g" "$INSTALL_DIR/.env.tmp"
   sed -i "s/SECRET_KEY=.*$/SECRET_KEY=$RANDOM_SECRET/g" "$INSTALL_DIR/.env.tmp"
   
-  # Ask if user wants to customize configuration
-  echo -e "${YELLOW}Network Evaluation Service Configuration${NC}"
-  read -p "Would you like to customize the configuration? (y/N): " CUSTOMIZE_CONFIG
+  # Set up default configuration
+  echo -e "${YELLOW}Setting up default configuration...${NC}"
   
-  if [[ "$CUSTOMIZE_CONFIG" =~ ^[Yy]$ ]]; then
-    echo -e "${GREEN}--- Configuration Customization ---${NC}"
-    echo -e "Press Enter to accept the default value shown in [brackets]."
-    
-    # Extract default values from the template
-    DEFAULT_WEB_PORT=$(grep "WEB_PORT" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "5000")
-    DEFAULT_TEST_TARGET=$(grep "TEST_TARGET" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "1.1.1.1")
-    DEFAULT_TEST_COUNT=$(grep "TEST_COUNT" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "400")
-    DEFAULT_PING_INTERVAL=$(grep "PING_INTERVAL" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "0.1")
-    DEFAULT_TEST_INTERVAL=$(grep "TEST_INTERVAL" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "60")
-    
-    # Collect user inputs with defaults
-    read -p "Web interface port [$DEFAULT_WEB_PORT]: " WEB_PORT
-    WEB_PORT=${WEB_PORT:-$DEFAULT_WEB_PORT}
-    
-    read -p "Ping target (IP or hostname) [$DEFAULT_TEST_TARGET]: " TEST_TARGET
-    TEST_TARGET=${TEST_TARGET:-$DEFAULT_TEST_TARGET}
-    
-    read -p "Number of pings per test [$DEFAULT_TEST_COUNT]: " TEST_COUNT
-    TEST_COUNT=${TEST_COUNT:-$DEFAULT_TEST_COUNT}
-    
-    read -p "Interval between individual pings in seconds [${DEFAULT_PING_INTERVAL}]: " PING_INTERVAL
-    PING_INTERVAL=${PING_INTERVAL:-$DEFAULT_PING_INTERVAL}
-    
-    read -p "Interval between tests in seconds [${DEFAULT_TEST_INTERVAL}]: " TEST_INTERVAL
-    TEST_INTERVAL=${TEST_INTERVAL:-$DEFAULT_TEST_INTERVAL}
-    
-    # Update the temporary .env file with user values
-    sed -i "s/WEB_PORT=.*$/WEB_PORT=$WEB_PORT/g" "$INSTALL_DIR/.env.tmp"
-    sed -i "s/TEST_TARGET=.*$/TEST_TARGET=$TEST_TARGET/g" "$INSTALL_DIR/.env.tmp"
-    sed -i "s/TEST_COUNT=.*$/TEST_COUNT=$TEST_COUNT/g" "$INSTALL_DIR/.env.tmp"
-    sed -i "s/PING_INTERVAL=.*$/PING_INTERVAL=$PING_INTERVAL/g" "$INSTALL_DIR/.env.tmp"
-    sed -i "s/TEST_INTERVAL=.*$/TEST_INTERVAL=$TEST_INTERVAL/g" "$INSTALL_DIR/.env.tmp"
-    
-    echo -e "${GREEN}Configuration customized successfully.${NC}"
-  else
-    echo -e "${YELLOW}Using default configuration values.${NC}"
-  fi
+  # Log that we're using default values
+  debug "Using default configuration values from template"
+  
+  # No interactive configuration - just use the defaults
+  echo -e "${GREEN}Default configuration set up successfully.${NC}"
   
   # Move the temporary file to the final location
   mv "$INSTALL_DIR/.env.tmp" "$INSTALL_DIR/.env"
@@ -725,7 +691,7 @@ echo -e "\nThe Network Evaluation Service has been installed and configured with
 echo -e "You can access the web dashboard at: ${YELLOW}http://$HOST_IP:$WEB_PORT${NC}"
 echo -e "\nImportant paths:"
 echo -e "  - Installation directory: ${YELLOW}$INSTALL_DIR${NC}"
-echo -e "  - Configuration: ${YELLOW}$INSTALL_DIR/.env${NC}"
+echo -e "  - Test configuration: ${YELLOW}$INSTALL_DIR/.env${NC}"
 echo -e "  - Docker Compose file: ${YELLOW}$INSTALL_DIR/docker-compose.yml${NC}"
 echo -e "\nUseful commands:"
 echo -e "  - View logs: ${YELLOW}cd $INSTALL_DIR && docker compose logs -f${NC}"
