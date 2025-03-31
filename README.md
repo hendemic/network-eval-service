@@ -156,7 +156,7 @@ nes-remove
 
 ## Development
 ### Branch Structure
-This project follows git flow conventions with new features branched by `feature/*`, releases staged in `release/*`, and `hotfixes/*`.
+This project follows git flow conventions with new features currently under active development branched by `feature/*`, releases staged in `release/*`, and urgent bugs under development in `hotfixes/*`.
 
 Additionally
 - `main`: this is the development branch with the most recent stable development build.
