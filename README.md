@@ -1,17 +1,16 @@
 # Network Evaluation Service
 
-ISP giving you the run-around with your intermitent drops? Having issues with your home network configuration? NES aims to give a minute by minute picture into your home network by collecting ping, jitter, and packet loss data almost continuously.
+Is your ISP giving you the run-around with your intermittent drops? Are you having issues with your home network configuration? NES aims to give a minute by minute picture into your home network by collecting ping, jitter, and packet loss data on an ongoing basis.
 
 ## Features
 
 - Automated ping tests to measure network latency, jitter, and packet loss
 - By default runs test run every minute, using 400 pings at a 0.1s interval. This is configurable in the .env.
-- Web dashboard with real-time visualization using Vue.js and D3.js with filtering for last 3 hours, 12 hours, 24 hours, 3 days, and 7 days.
-- Results stored in PostgreSQL database and scalable for future feature development
+- Web dashboard with real-time visualization and filtering for last 3 hours, 12 hours, 24 hours, 3 days, and 7 days.
+- Results stored in PostgreSQL database and scalable for future feature development.
 - Docker-based deployment to local host, Raspi, or Proxmox LXC
 
 ## Prerequisites
-
 - Any debian based system
 - Internet access for downloading dependencies and container images
 
@@ -19,13 +18,16 @@ The installer will automatically check for Docker and Docker Compose and install
 
 ## Installation
 ### Unique Proxmox LXC Installation Considerations
-Its recommended that you use a Debian 12 LXC. Set up your new container, and then make sure required packages are installed.
+It is recommended that you use a Debian 12 LXC. Set up your new container, and then make sure required packages are installed.
+
 ```bash
 apt update && apt install git curl sudo
 ```
 
+> **Caution**: **The install.sh script is not a Proxmox Helper Script.** Do not run the install script on your host in Proxmox. If you are using Proxmox, this is meant to be run in an LXC container you create for NES or intend to run NES in alongside other Docker apps.
+
 ### Install process for all systems
-Navigate to the directory you prefer to clone source to for install. If you're unsure, usr/local/src is a common convention and will work for this install.
+Navigate to the directory you prefer to clone source to for install. If you're unsure, /usr/local/src is a common convention and will work for this install.
 ```bash
 cd /usr/local/src/
 ```
@@ -44,21 +46,18 @@ sudo ./install.sh
 ```
 
 The installer will:
-1. Install Docker if it's not already installed
+1. Install Docker and Docker Compose if they are not already installed
 2. Clone the repository (or update it if it already exists)
 3. Configure environment variables
 4. Build and start Docker containers
-5. Create a systemd service for automatic startup
+5. Create Bash shortcuts for the update and uninstall scripts.
 
 The installer will prompt you to choose between production (stable) or development (latest) branches. Unless you are contributing to the project, its highly recommended that you use production and not the development branch if you are an end user.
 
 ## Usage
 Access the web dashboard at: `http://YOUR_SERVER_IP:5000`
 
-The dashboard shows:
-- Current network status
-- Historical latency, jitter, and packet loss graphs
-- 24-hour statistics
+> **Note**: if you've configured a different port, replace 5000 with the port you've configured for the web interface.
 
 ## Configuration
 Configuration is done through environment variables in the `.env` file located in /opt/network-evaluation-service. Important settings include:
@@ -70,9 +69,9 @@ Configuration is done through environment variables in the `.env` file located i
 - `TEST_INTERVAL` - Interval between pings in seconds (default: 0.1)
 
 ## Upgrading
-To upgrade to a new version:
+There is an update utility provided, which can be found in your program files (/opt/network-evaluation-service/update.sh). The install set up as a bash short cut for convenience.
 
-The install script provides an update utility that is set up as a bash short cut. For easiest updating use the following command (the current working directory is not relevant)
+For the easiest update use the following command (the current working directory is not relevant):
 ```bash
 nes-update
 ```
@@ -150,11 +149,10 @@ To remove the program
 - remove bash shortcuts for nes-remove and nes-update
 
 There is a script available to simplify uninstallation.
-> **Warning**: This is experimental, and removes directories and docker containers + volumes with root access. It has been tested on a Proxmox LXC and a Raspi with no issues. However, if you are not comfortable please manually remove instead.
-
 ```bash
 nes-remove
 ```
+> **Warning**: This is experimental, and removes directories and docker containers + volumes with root access. It has been tested on a Proxmox LXC and a Raspi with no issues. However, if you are not comfortable please manually remove instead.
 
 ## Development
 ### Branch Structure
