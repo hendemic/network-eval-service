@@ -84,42 +84,127 @@ run_cmd() {
 check_requirements() {
   progress "Checking requirements..."
 
-  # Check if Docker is installed
+  # Check both Docker and Docker Compose upfront
   debug "Checking for Docker installation..."
-  if ! command -v docker &> /dev/null; then
-    echo -e "${RED}Docker is not installed. Installing Docker...${NC}"
-    if [ $VERBOSE -eq 1 ]; then
-      curl -fsSL https://get.docker.com -o get-docker.sh
-      sh get-docker.sh
-    else
-      curl -fsSL https://get.docker.com -o get-docker.sh > /dev/null
-      sh get-docker.sh > /dev/null
-    fi
-    rm get-docker.sh
-  else
+  HAS_DOCKER=0
+  HAS_COMPOSE=0
+  MISSING_TOOLS=""
+  
+  if command -v docker &> /dev/null; then
     debug "Docker is already installed."
-  fi
-
-  # Check if Docker Compose is installed
-  debug "Checking for Docker Compose installation..."
-  if ! command -v docker compose &> /dev/null; then
-    echo -e "${RED}Docker Compose plugin is not installed. Installing Docker Compose...${NC}"
-    if [ $VERBOSE -eq 1 ]; then
-      apt-get update
-      apt-get install -y docker-compose-plugin
-    else
-      apt-get update > /dev/null
-      apt-get install -y docker-compose-plugin > /dev/null
-    fi
+    HAS_DOCKER=1
   else
+    MISSING_TOOLS="Docker"
+  fi
+  
+  debug "Checking for Docker Compose installation..."
+  if command -v docker compose &> /dev/null; then
     debug "Docker Compose is already installed."
+    HAS_COMPOSE=1
+  else
+    if [ -z "$MISSING_TOOLS" ]; then
+      MISSING_TOOLS="Docker Compose"
+    else
+      MISSING_TOOLS="Docker and Docker Compose"
+    fi
+  fi
+  
+  # If any tools are missing, prompt for installation
+  if [ -n "$MISSING_TOOLS" ]; then
+    echo -e "${YELLOW}$MISSING_TOOLS not found on this system.${NC}"
+    echo -e "$MISSING_TOOLS required to run Network Evaluation Service."
+    read -p "Would you like to install $MISSING_TOOLS now? (Y/n): " INSTALL_MISSING
+    
+    if [[ ! "$INSTALL_MISSING" =~ ^[Nn]$ ]]; then
+      # Install Docker if needed
+      if [ $HAS_DOCKER -eq 0 ]; then
+        echo -e "Installing Docker (this may take a few minutes)..."
+        if [ $VERBOSE -eq 1 ]; then
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+        else
+          echo -n "  Progress: "
+          # Download and run Docker install script in background
+          curl -fsSL https://get.docker.com -o get-docker.sh > /dev/null 2>&1
+          sh get-docker.sh > /dev/null 2>&1 &
+          docker_install_pid=$!
+          
+          # Display progress indicator
+          spinner=( "|" "/" "-" "\\" )
+          i=0
+          while kill -0 $docker_install_pid 2>/dev/null; do
+            echo -ne "\b${spinner[$i]}"
+            i=$(( (i+1) % 4 ))
+            sleep 1
+          done
+          
+          # Check installation success
+          wait $docker_install_pid
+          if [ $? -eq 0 ]; then
+            echo -e "\b ${GREEN}Done!${NC}"
+          else
+            echo -e "\b ${RED}Failed!${NC}"
+            echo -e "${RED}Docker installation failed. Please install Docker manually before continuing.${NC}"
+            exit 1
+          fi
+        fi
+        rm get-docker.sh
+        echo -e "${GREEN}Docker has been successfully installed.${NC}"
+      fi
+      
+      # Install Docker Compose if needed
+      if [ $HAS_COMPOSE -eq 0 ]; then
+        echo -e "Installing Docker Compose plugin..."
+        if [ $VERBOSE -eq 1 ]; then
+          apt-get update
+          apt-get install -y docker-compose-plugin
+        else
+          echo -n "  Progress: "
+          # Install Docker Compose in background
+          {
+            apt-get update > /dev/null 2>&1
+            apt-get install -y docker-compose-plugin > /dev/null 2>&1
+          } &
+          compose_install_pid=$!
+          
+          # Display progress indicator
+          spinner=( "|" "/" "-" "\\" )
+          i=0
+          while kill -0 $compose_install_pid 2>/dev/null; do
+            echo -ne "\b${spinner[$i]}"
+            i=$(( (i+1) % 4 ))
+            sleep 1
+          done
+          
+          # Check installation success
+          wait $compose_install_pid
+          if [ $? -eq 0 ]; then
+            echo -e "\b ${GREEN}Done!${NC}"
+          else
+            echo -e "\b ${RED}Failed!${NC}"
+            echo -e "${RED}Docker Compose installation failed. Please install Docker Compose manually before continuing.${NC}"
+            exit 1
+          fi
+        fi
+        echo -e "${GREEN}Docker Compose has been successfully installed.${NC}"
+      fi
+    else
+      echo -e "${RED}$MISSING_TOOLS required but will not be installed.${NC}"
+      echo -e "Please install $MISSING_TOOLS first and then run this installer again."
+      exit 1
+    fi
   fi
 
   # Verify docker is running
   debug "Verifying Docker service is running..."
   if ! docker info > /dev/null 2>&1; then
-    echo -e "${RED}Docker is not running. Starting Docker...${NC}"
+    echo -e "${YELLOW}Docker is not running. Starting Docker...${NC}"
     systemctl start docker
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}Failed to start Docker service. Please start Docker manually before continuing.${NC}"
+      exit 1
+    fi
+    echo -e "${GREEN}Docker service started successfully.${NC}"
   else
     debug "Docker service is running."
   fi
@@ -267,11 +352,35 @@ if [ -f "$INSTALL_DIR/VERSION" ]; then
   success "VERSION file copied to frontend"
 fi
 
-debug "Building Docker containers (this may take several minutes)..."
+echo -e "${YELLOW}Building Docker containers (this may take several minutes)...${NC}"
 if [ $VERBOSE -eq 1 ]; then
+  # In verbose mode, show full build output
   docker compose build
 else
-  docker compose build > /dev/null
+  # In compact mode, show progress indicators
+  echo -n "  Progress: "
+  # Run docker compose build in background and capture its PID
+  docker compose build > /dev/null 2>&1 &
+  build_pid=$!
+  
+  # Display progress indicator while build is running
+  spinner=( "|" "/" "-" "\\" )
+  i=0
+  while kill -0 $build_pid 2>/dev/null; do
+    echo -ne "\b${spinner[$i]}"
+    i=$(( (i+1) % 4 ))
+    sleep 1
+  done
+  
+  # Check if build completed successfully
+  wait $build_pid
+  if [ $? -ne 0 ]; then
+    echo -e "\b ${RED}Failed!${NC}"
+    echo -e "${RED}Docker build failed. Run with -v for detailed output.${NC}"
+    exit 1
+  else
+    echo -e "\b ${GREEN}Done!${NC}"
+  fi
 fi
 success "Docker containers built successfully"
 
@@ -280,7 +389,29 @@ debug "Starting services with docker compose..."
 if [ $VERBOSE -eq 1 ]; then
   docker compose up -d
 else
-  docker compose up -d > /dev/null
+  echo -n "  Progress: "
+  # Run docker compose up in background
+  docker compose up -d > /dev/null 2>&1 &
+  startup_pid=$!
+  
+  # Display progress indicator while startup is running
+  spinner=( "|" "/" "-" "\\" )
+  i=0
+  while kill -0 $startup_pid 2>/dev/null; do
+    echo -ne "\b${spinner[$i]}"
+    i=$(( (i+1) % 4 ))
+    sleep 0.5  # Faster spinner as this usually takes less time
+  done
+  
+  # Check if startup completed successfully
+  wait $startup_pid
+  if [ $? -ne 0 ]; then
+    echo -e "\b ${RED}Failed!${NC}"
+    echo -e "${RED}Docker startup failed. Run with -v for detailed output.${NC}"
+    exit 1
+  else
+    echo -e "\b ${GREEN}Done!${NC}"
+  fi
 fi
 success "Docker containers started successfully"
 
