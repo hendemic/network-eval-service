@@ -342,10 +342,10 @@ EOF
     read -p "Number of pings per test [$DEFAULT_TEST_COUNT]: " TEST_COUNT
     TEST_COUNT=${TEST_COUNT:-$DEFAULT_TEST_COUNT}
     
-    read -p "Interval between individual pings in seconds [$DEFAULT_PING_INTERVAL]: " PING_INTERVAL
+    read -p "Interval between individual pings in seconds [${DEFAULT_PING_INTERVAL}]: " PING_INTERVAL
     PING_INTERVAL=${PING_INTERVAL:-$DEFAULT_PING_INTERVAL}
     
-    read -p "Interval between tests in seconds [$DEFAULT_TEST_INTERVAL]: " TEST_INTERVAL
+    read -p "Interval between tests in seconds [${DEFAULT_TEST_INTERVAL}]: " TEST_INTERVAL
     TEST_INTERVAL=${TEST_INTERVAL:-$DEFAULT_TEST_INTERVAL}
     
     # Update the temporary .env file with user values
