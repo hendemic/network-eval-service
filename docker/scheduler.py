@@ -59,7 +59,7 @@ def run_test():
 def main():
     """Main function to start the scheduler"""
     # Get test interval from environment
-    interval_seconds = float(os.environ.get('TEST_INTERVAL_SECONDS', '60'))
+    interval_seconds = float(os.environ.get('TEST_INTERVAL', '60'))
     logger.info(f"Starting scheduler with interval: {interval_seconds} seconds")
     
     # Create the scheduler

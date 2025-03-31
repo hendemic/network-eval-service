@@ -5,6 +5,17 @@ import datetime
 from typing import Dict, List, Optional, Union, Tuple
 
 def ping_test(target: str = "1.1.1.1", count: int = 100, interval: str = "0.1") -> Dict[str, Union[float, str, datetime.datetime]]:
+    """
+    Run a ping test against the specified target.
+    
+    Args:
+        target: The IP address or hostname to ping
+        count: Number of pings to send
+        interval: Interval between pings in seconds (PING_INTERVAL)
+        
+    Returns:
+        Dictionary with ping test results
+    """
     # Send pings
     command = ["ping", "-c", str(count), "-i", interval, "-W", "1", target]
 

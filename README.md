@@ -70,7 +70,8 @@ Configuration is done through environment variables in the `.env` file located i
 - `WEB_PORT` - The port to expose the web interface (default: 5000)
 - `TEST_TARGET` - IP address or hostname to ping (default: 1.1.1.1)
 - `TEST_COUNT` - Number of pings per test (default: 400)
-- `TEST_INTERVAL` - Interval between pings in seconds (default: 0.1)
+- `PING_INTERVAL` - Interval between individual pings in seconds (default: 0.1)
+- `TEST_INTERVAL` - Interval between tests in seconds (default: 60)
 
 ## Upgrading
 There is an update utility provided, which can be found in your program files (`/opt/network-evaluation-service/update.sh` by default). The install script set up a bash short cut (`nes-update`) for convenience.

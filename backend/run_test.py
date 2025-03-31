@@ -27,7 +27,7 @@ def run_network_test():
         test_results = ping_test(
             target=app.config['TEST_TARGET'],
             count=app.config['TEST_COUNT'],
-            interval=app.config['TEST_INTERVAL']
+            interval=app.config['PING_INTERVAL']
         )
         
         if not test_results:

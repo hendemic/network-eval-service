@@ -299,7 +299,8 @@ WEB_PORT=5000
 # Network test configuration
 TEST_TARGET=1.1.1.1
 TEST_COUNT=400
-TEST_INTERVAL=0.1
+PING_INTERVAL=0.1
+TEST_INTERVAL=60
 EOF
   else
     debug "Using example environment file as template..."
@@ -328,7 +329,8 @@ EOF
     DEFAULT_WEB_PORT=$(grep "WEB_PORT" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "5000")
     DEFAULT_TEST_TARGET=$(grep "TEST_TARGET" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "1.1.1.1")
     DEFAULT_TEST_COUNT=$(grep "TEST_COUNT" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "400")
-    DEFAULT_TEST_INTERVAL=$(grep "TEST_INTERVAL" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "0.1")
+    DEFAULT_PING_INTERVAL=$(grep "PING_INTERVAL" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "0.1")
+    DEFAULT_TEST_INTERVAL=$(grep "TEST_INTERVAL" "$INSTALL_DIR/.env.tmp" | cut -d '=' -f2 || echo "60")
     
     # Collect user inputs with defaults
     read -p "Web interface port [$DEFAULT_WEB_PORT]: " WEB_PORT
@@ -340,13 +342,17 @@ EOF
     read -p "Number of pings per test [$DEFAULT_TEST_COUNT]: " TEST_COUNT
     TEST_COUNT=${TEST_COUNT:-$DEFAULT_TEST_COUNT}
     
-    read -p "Interval between pings in seconds [$DEFAULT_TEST_INTERVAL]: " TEST_INTERVAL
+    read -p "Interval between individual pings in seconds [$DEFAULT_PING_INTERVAL]: " PING_INTERVAL
+    PING_INTERVAL=${PING_INTERVAL:-$DEFAULT_PING_INTERVAL}
+    
+    read -p "Interval between tests in seconds [$DEFAULT_TEST_INTERVAL]: " TEST_INTERVAL
     TEST_INTERVAL=${TEST_INTERVAL:-$DEFAULT_TEST_INTERVAL}
     
     # Update the temporary .env file with user values
     sed -i "s/WEB_PORT=.*$/WEB_PORT=$WEB_PORT/g" "$INSTALL_DIR/.env.tmp"
     sed -i "s/TEST_TARGET=.*$/TEST_TARGET=$TEST_TARGET/g" "$INSTALL_DIR/.env.tmp"
     sed -i "s/TEST_COUNT=.*$/TEST_COUNT=$TEST_COUNT/g" "$INSTALL_DIR/.env.tmp"
+    sed -i "s/PING_INTERVAL=.*$/PING_INTERVAL=$PING_INTERVAL/g" "$INSTALL_DIR/.env.tmp"
     sed -i "s/TEST_INTERVAL=.*$/TEST_INTERVAL=$TEST_INTERVAL/g" "$INSTALL_DIR/.env.tmp"
     
     echo -e "${GREEN}Configuration customized successfully.${NC}"
