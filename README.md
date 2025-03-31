@@ -2,6 +2,10 @@
 
 Is your ISP giving you the run-around with your intermittent drops? Are you having issues with your home network configuration? NES aims to give a minute by minute picture into your home network by collecting ping, jitter, and packet loss data on an ongoing basis.
 
+
+https://github.com/user-attachments/assets/829a8f7a-474e-4344-8744-e8529229fbba
+
+
 ## Features
 
 - Automated ping tests to measure network latency, jitter, and packet loss
