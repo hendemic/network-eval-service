@@ -73,7 +73,7 @@ Configuration is done through environment variables in the `.env` file located i
 - `TEST_INTERVAL` - Interval between pings in seconds (default: 0.1)
 
 ## Upgrading
-There is an update utility provided, which can be found in your program files (/opt/network-evaluation-service/update.sh). The install set up as a bash short cut for convenience.
+There is an update utility provided, which can be found in your program files (`/opt/network-evaluation-service/update.sh` by default). The install script set up a bash short cut (`nes-update`) for convenience.
 
 For the easiest update use the following command (the current working directory is not relevant):
 ```bash
