@@ -93,20 +93,24 @@ check_requirements() {
   if command -v docker &> /dev/null; then
     debug "Docker is already installed."
     HAS_DOCKER=1
+    
+    # Only check for Docker Compose if Docker is installed
+    debug "Checking for Docker Compose installation..."
+    if docker compose version &> /dev/null; then
+      debug "Docker Compose is already installed."
+      HAS_COMPOSE=1
+    else
+      MISSING_TOOLS="Docker Compose"
+    fi
   else
     MISSING_TOOLS="Docker"
+    # If Docker is not installed, Docker Compose cannot be used
+    HAS_COMPOSE=0
   fi
   
-  debug "Checking for Docker Compose installation..."
-  if command -v docker compose &> /dev/null; then
-    debug "Docker Compose is already installed."
-    HAS_COMPOSE=1
-  else
-    if [ -z "$MISSING_TOOLS" ]; then
-      MISSING_TOOLS="Docker Compose"
-    else
-      MISSING_TOOLS="Docker and Docker Compose"
-    fi
+  # If Docker is missing, both Docker and Docker Compose need to be installed
+  if [ "$HAS_DOCKER" -eq 0 ]; then
+    MISSING_TOOLS="Docker and Docker Compose"
   fi
   
   # If any tools are missing, prompt for installation
