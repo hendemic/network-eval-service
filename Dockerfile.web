@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy frontend files and build
+# Copy frontend files and VERSION file
 COPY frontend/ frontend/
+COPY VERSION frontend/public/VERSION
 RUN cd frontend && npm install && npm run build
 
 # Copy backend files
