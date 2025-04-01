@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 """
-Network test scheduler using APScheduler
-Runs the network test at regular intervals
+Network Test Scheduler for the Network Evaluation Service
+
+This module provides a reliable scheduling system for executing network tests
+at regular intervals. It uses APScheduler to ensure tests continue running
+even after temporary failures, maintaining consistent monitoring.
+
+Key features:
+- Configurable test intervals via environment variables
+- Automatic recovery from test failures
+- Logging of test execution and results
+- Dynamic loading of the test module
 """
 import os
 import sys
@@ -25,14 +34,29 @@ logger = logging.getLogger('network-test-scheduler')
 RUN_TEST_PATH = '/app/backend/run_test.py'
 
 def import_module_from_file(module_name, file_path):
-    """Import a module from a file path"""
+    """Dynamically import a Python module from a file path.
+    
+    This function allows the scheduler to load the test module at runtime
+    without requiring it to be in the Python path. This enables a more
+    flexible container architecture where modules can be mounted at runtime.
+    
+    Args:
+        module_name: The name to assign to the imported module
+        file_path: The absolute path to the Python file to import
+        
+    Returns:
+        The imported module object, or None if import failed
+    """
+    # Create a module spec from the file path
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     if spec is None:
         logger.error(f"Could not find file: {file_path}")
         return None
     
+    # Create a module from the spec
     module = importlib.util.module_from_spec(spec)
     try:
+        # Execute the module code in the module's namespace
         spec.loader.exec_module(module)
         return module
     except Exception as e:
@@ -40,25 +64,46 @@ def import_module_from_file(module_name, file_path):
         return None
 
 def run_test():
-    """Run the network test"""
+    """Execute a network test by dynamically loading and running the test module.
+    
+    This function:
+    1. Imports the test module from the specified path
+    2. Calls its main() function to run the test
+    3. Logs the outcome (success or failure)
+    
+    The test module is responsible for:
+    - Creating a database connection
+    - Running the actual ping test
+    - Storing results in the database
+    """
     try:
+        # Log test start with ISO-formatted timestamp for easier log parsing
         logger.info(f"Running network test at {datetime.now().isoformat()}")
         
-        # Import the run_test module
+        # Dynamically import the test module from its file path
+        # This allows for easy updates without restarting the container
         run_test_module = import_module_from_file('run_test', RUN_TEST_PATH)
         
+        # Verify the module was loaded and has the expected entry point
         if run_test_module and hasattr(run_test_module, 'main'):
-            # Execute the main function
+            # Execute the test by calling its main function
             run_test_module.main()
             logger.info("Network test completed successfully")
         else:
             logger.error("Could not find main function in run_test module")
     except Exception as e:
+        # Catch and log any exception to prevent the scheduler from crashing
         logger.error(f"Error running network test: {e}")
 
 def main():
-    """Main function to start the scheduler"""
-    # Get test interval from environment
+    """Initialize and start the test scheduler.
+    
+    This function:
+    1. Reads configuration from environment variables
+    2. Sets up a recurring job to execute network tests
+    3. Keeps the scheduler running until process termination
+    """
+    # Get test interval from environment variables with a sensible default
     interval_seconds = float(os.environ.get('TEST_INTERVAL', '60'))
     logger.info(f"Starting scheduler with interval: {interval_seconds} seconds")
     

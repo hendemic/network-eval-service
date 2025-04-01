@@ -112,15 +112,19 @@ export default {
       // Configure X-axis ticks based on selected time range
       let xAxisTicks;
       
-      // Set appropriate tick intervals based on selected hours
+      // Set appropriate tick intervals based on the time range selected by the user
+      // This ensures the x-axis has a readable number of markers regardless of range
       if (props.selectedHours <= 3) {
-        // Every 15 minutes for 3-hour view
+        // For 3-hour view: Show tick marks every 15 minutes
+        // This provides enough detail for short-term monitoring
         xAxisTicks = d3.timeMinute.every(15);
       } else if (props.selectedHours <= 24) {
-        // Every hour for 12-hour and 24-hour views
+        // For 12-hour and 24-hour views: Show tick marks every hour
+        // This gives a good balance of detail without overcrowding
         xAxisTicks = d3.timeHour.every(1);
       } else {
-        // Every day for 3-day and 7-day views
+        // For 3-day and 7-day views: Show tick marks every day
+        // This provides appropriate context for long-term trends
         xAxisTicks = d3.timeDay.every(1);
       }
       
