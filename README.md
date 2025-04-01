@@ -55,7 +55,7 @@ For systems without Docker or for easier installation, an installer script is pr
 - Internet access for downloading dependencies and container images
 
 #### Proxmox LXC Installation Considerations
-It is recommended that you use a Debian 12 LXC. Set up your new container, and then make sure required packages are installed.
+It is recommended that you use a Debian 12 LXC if installing on Proxmox. Set up your new container, and then make sure required packages are installed.
 
 ```bash
 apt update && apt install git curl sudo
