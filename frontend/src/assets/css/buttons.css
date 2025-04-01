@@ -12,17 +12,17 @@
 
 .time-btn {
   padding: var(--space-xs) var(--space-sm);
-  background-color: var(--bg-light);
+  background-color: var(--color-surface-base);
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  color: var(--filter-inactive-color);
+  color: var(--color-filter-inactive);
 }
 
 .time-btn.active {
-  background-color: var(--brand-primary);
-  color: var(--text-white);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
 }
 
 .time-btn.disabled {
@@ -33,27 +33,27 @@
 /* Page size buttons */
 .page-size-btn {
   padding: var(--space-xs) var(--space-sm);
-  background-color: var(--bg-light);
+  background-color: var(--color-surface-base);
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  color: var(--filter-inactive-color);
+  color: var(--color-filter-inactive);
 }
 
 .page-size-btn.active {
-  background-color: var(--brand-primary);
-  color: var(--text-white);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
 }
 
 /* Pagination buttons */
 .pagination-btn {
   padding: var(--space-xs) var(--space-sm);
-  background-color: var(--bg-light);
+  background-color: var(--color-surface-base);
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  color: var(--filter-inactive-color);
+  color: var(--color-filter-inactive);
 }
 
 .pagination-btn:disabled {
@@ -62,14 +62,14 @@
 }
 
 .pagination-btn:not(:disabled):hover {
-  background-color: var(--table-header-bg);
+  background-color: var(--color-bg-table-header);
 }
 
 /* Action buttons */
 .action-btn {
   padding: var(--space-xs) var(--space-sm);
-  background-color: var(--brand-primary);
-  color: var(--text-white);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -77,11 +77,11 @@
 }
 
 .action-btn.secondary {
-  background-color: var(--brand-secondary);
+  background-color: var(--color-brand-secondary);
 }
 
 .action-btn.danger {
-  background-color: var(--brand-danger);
+  background-color: var(--color-brand-danger);
 }
 
 .action-btn:disabled {

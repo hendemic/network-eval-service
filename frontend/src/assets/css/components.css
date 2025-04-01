@@ -9,17 +9,17 @@
 .waiting {
   text-align: center;
   padding: var(--space-xl);
-  background: var(--bg-white);
+  background: var(--color-surface-card);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-md);
 }
 
 .error {
-  color: var(--brand-danger);
+  color: var(--color-brand-danger);
 }
 
 .waiting {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
 }
 
 .waiting-icon {
@@ -29,7 +29,7 @@
 
 .waiting-subtext {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   margin-top: var(--space-sm);
 }
 
@@ -45,7 +45,7 @@
 }
 
 .last-updated {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   margin-bottom: var(--space-md);
 }
@@ -64,13 +64,13 @@
 .chart-card {
   margin-top: var(--space-xl);
   padding-top: var(--space-md);
-  border-top: var(--border-width-thin) solid var(--border-light);
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
 }
 
 .chart-card h4 {
   margin-top: 0;
   margin-bottom: var(--space-md);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .performance-section {
@@ -90,5 +90,5 @@
 
 .control-label {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }

@@ -49,7 +49,7 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm);
   border-radius: var(--border-radius-sm);
   display: flex;
@@ -59,8 +59,8 @@ export default {
 }
 
 .theme-toggle:hover {
-  background-color: var(--bg-light);
-  color: var(--brand-primary);
+  background-color: var(--color-surface-base);
+  color: var(--color-brand-primary);
   /* No transition */
 }
 
@@ -68,7 +68,7 @@ export default {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: var(--breakpoint-sm)) {
   .theme-toggle {
     width: 100%;
     justify-content: flex-end;

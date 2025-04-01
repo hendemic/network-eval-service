@@ -1,46 +1,50 @@
 /**
  * Network Evaluation Service - Theme Variables
- * Contains theme variables for both light and dark modes
+ * Contains theme variables for both light and dark modes with functional naming
  */
 
 /* No transitions for immediate theme switching */
 
 /* Base theme (light mode) */
 :root {
-  /* Color Palette */
-  --brand-primary: #2c3e50;
-  --brand-secondary: #42b983;
-  --brand-accent: #3498db;
-  --brand-warning: #f39c12;
-  --brand-danger: #e74c3c;
-  --brand-success: #27ae60;
+  /* Brand Colors - Used for primary UI elements, branding, and accents */
+  --color-brand-primary: #2c3e50;    /* Primary brand color */
+  --color-brand-secondary: #42b983;  /* Secondary brand color */
+  --color-brand-accent: #3498db;     /* Accent brand color */
+  --color-brand-warning: #f39c12;    /* Warning indicators */
+  --color-brand-danger: #e74c3c;     /* Error/danger indicators */
+  --color-brand-success: #27ae60;    /* Success indicators */
   
-  /* Backgrounds */
-  --bg-light: #f8f9fa;
-  --bg-white: #ffffff;
-  --bg-dark: #343a40;
+  /* Surface Colors - Used for UI backgrounds and containers */
+  --color-surface-base: #f8f9fa;     /* Main page background */
+  --color-surface-card: #ffffff;     /* Card, dialog and component backgrounds */
+  --color-surface-contrast: #343a40; /* For creating depth and contrast */
   
-  /* Text Colors */
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-light: #999999;
-  --text-white: #ffffff;
+  /* Text Colors - Used for text content */
+  --color-text-primary: #333333;     /* Main content text */
+  --color-text-secondary: #666666;   /* Secondary text, labels */
+  --color-text-tertiary: #999999;    /* Subtle text, placeholders */
+  --color-text-on-brand: #ffffff;    /* Text on brand colors */
   
-  /* Component-specific colors */
-  --metric-value-color: #444444;     /* Dark grey for metric values in light mode */
-  --filter-inactive-color: #555555;  /* Dark grey for inactive filter buttons in light mode */
-  --nav-active-color: var(--brand-primary); /* Active navigation item color in light mode */
-  --chart-highlight-stroke: #333333; /* Stroke color for highlighted chart elements */
+  /* Component-specific colors - For consistent UI elements */
+  --color-metric-value: #444444;     /* Text for metric values */
+  --color-filter-inactive: #555555;  /* For inactive filter buttons */
+  --color-nav-active: var(--color-brand-primary); /* Active navigation items */
+  --color-chart-highlight: #333333;  /* Highlight stroke for chart elements */
   
-  /* Border Colors */
-  --border-light: #dddddd;
-  --border-medium: #bbbbbb;
-  --border-dark: #555555;
+  /* Border Colors - Consistent grouping and separation */
+  --color-border-subtle: #dddddd;    /* Light dividers and subtle borders */
+  --color-border-default: #bbbbbb;   /* Default borders */
+  --color-border-strong: #555555;    /* Strong emphasis borders */
   
-  /* Chart Colors */
-  --chart-latency: #3498db;
-  --chart-jitter: #9b59b6;
-  --chart-packet-loss: #e74c3c;
+  /* Chart Colors - Data visualization */
+  --color-chart-latency: #3498db;    /* Latency data */
+  --color-chart-jitter: #9b59b6;     /* Jitter data */
+  --color-chart-packet-loss: #e74c3c; /* Packet loss data */
+  
+  /* UI Surface-specific backgrounds */
+  --color-bg-table-header: var(--color-surface-base); /* Table header backgrounds */
+  --color-bg-table-hover: rgba(0, 0, 0, 0.05);        /* Table row hover */
   
   /* Typography */
   --font-family-primary: 'Avenir', Helvetica, Arial, sans-serif;
@@ -95,46 +99,45 @@
 
 /* Dark theme overrides - applied when .dark-theme class is added to body or html */
 .dark-theme {
-  /* Color Palette */
-  --brand-primary: #34495e;
-  --brand-secondary: #2ecc71;
-  --brand-accent: #3498db;
-  --brand-warning: #f39c12;
-  --brand-danger: #e74c3c;
-  --brand-success: #27ae60;
+  /* Brand Colors - Adjusted for dark theme visibility */
+  --color-brand-primary: #4a6b8a;   /* Lighter for better contrast in dark mode */
+  --color-brand-secondary: #2ecc71;
+  --color-brand-accent: #3498db;
+  --color-brand-warning: #f39c12;
+  --color-brand-danger: #e74c3c;
+  --color-brand-success: #27ae60;
   
-  /* Backgrounds */
-  --bg-light: #0d1117;    /* Darker shade for elements */
-  --bg-white: #0d1117;    /* Background for cards */
-  --bg-dark: #010409;     /* Main background color */
+  /* Surface Colors - Dark theme versions */
+  --color-surface-base: #010409;     /* Main dark background */
+  --color-surface-card: #0d1117;     /* Card backgrounds in dark mode */
+  --color-surface-contrast: #1f2937; /* Contrasting surface for depth */
   
-  /* Text Colors */
-  --text-primary: #ecf0f1;
-  --text-secondary: #bdc3c7;
-  --text-light: #95a5a6;
+  /* Text Colors - Lighter for dark backgrounds */
+  --color-text-primary: #ecf0f1;     /* Primary text on dark backgrounds */
+  --color-text-secondary: #bdc3c7;   /* Secondary text on dark backgrounds */
+  --color-text-tertiary: #95a5a6;    /* Tertiary text on dark backgrounds */
   
   /* Component-specific colors */
-  --metric-value-color: #e0e0e0;     /* Light grey for metric values in dark mode */
-  --filter-inactive-color: #a0a0a0;  /* Medium grey for inactive filter buttons in dark mode */
-  --nav-active-color: var(--text-white); /* White for active navigation item in dark mode */
-  --table-header-bg: #161b22;        /* Dark background for table headers */
-  --table-hover-bg: #1f2937;         /* Dark background for table row hover */
-  --chart-highlight-stroke: #e0e0e0; /* Light stroke color for highlighted chart elements */
+  --color-metric-value: #e0e0e0;     /* Lighter metric text for dark mode */
+  --color-filter-inactive: #a0a0a0;  /* Medium grey for inactive elements */
+  --color-nav-active: var(--color-text-on-brand); /* Active navigation in dark mode */
+  --color-chart-highlight: #e0e0e0;  /* Highlight stroke for chart elements */
   
-  /* Ensure all text is visible in dark mode */
-  --brand-primary: #4a6b8a; /* Lighter version for better contrast */
+  /* UI Surface-specific backgrounds */
+  --color-bg-table-header: #161b22;  /* Dark table header backgrounds */
+  --color-bg-table-hover: #1f2937;   /* Dark table row hover */
   
-  /* Chart Colors - lighter shades for dark mode */
-  --chart-latency: #60a5fa;    /* Light blue */
-  --chart-jitter: #c084fc;     /* Light purple */
-  --chart-packet-loss: #f87171; /* Light red */
+  /* Chart Colors - Lighter shades for dark mode visibility */
+  --color-chart-latency: #60a5fa;    /* Light blue */
+  --color-chart-jitter: #c084fc;     /* Light purple */
+  --color-chart-packet-loss: #f87171; /* Light red */
   
-  /* Border Colors */
-  --border-light: #34495e;
-  --border-medium: #2c3e50;
-  --border-dark: #1a2635;
+  /* Border Colors - Darker for dark theme */
+  --color-border-subtle: #34495e;
+  --color-border-default: #2c3e50;
+  --color-border-strong: #1a2635;
   
-  /* Shadows - darker for dark mode */
+  /* Shadows - Adjusted for dark mode */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);

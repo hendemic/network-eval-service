@@ -53,14 +53,14 @@ export default {
       // Otherwise use CSS variables based on metric
       const metricLower = props.metric.toLowerCase();
       if (metricLower.includes('latency')) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--chart-latency').trim();
+        return getComputedStyle(document.documentElement).getPropertyValue('--color-chart-latency').trim();
       } else if (metricLower.includes('jitter')) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--chart-jitter').trim();
+        return getComputedStyle(document.documentElement).getPropertyValue('--color-chart-jitter').trim();
       } else if (metricLower.includes('packet') || metricLower.includes('loss')) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--chart-packet-loss').trim();
+        return getComputedStyle(document.documentElement).getPropertyValue('--color-chart-packet-loss').trim();
       }
       // Default color
-      return getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim();
+      return getComputedStyle(document.documentElement).getPropertyValue('--color-brand-secondary').trim();
     };
     
     const drawChart = () => {
@@ -222,7 +222,7 @@ export default {
           // Highlight the bar
           d3.select(this)
             .attr('opacity', 1)
-            .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--chart-highlight-stroke'))
+            .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--color-chart-highlight'))
             .attr('stroke-width', 1)
           
           // Make sure we have a valid timestamp
@@ -310,22 +310,22 @@ export default {
 
 :deep(.domain),
 :deep(.tick line) {
-  stroke: var(--border-light);
+  stroke: var(--color-border-subtle);
 }
 
 :deep(.tick text) {
   font-size: var(--font-size-xs);
-  fill: var(--text-secondary);
+  fill: var(--color-text-secondary);
 }
 
 :deep(.axis-label) {
-  fill: var(--text-secondary);
+  fill: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
 :deep(.x-axis path),
 :deep(.y-axis path) {
-  stroke: var(--border-light);
+  stroke: var(--color-border-subtle);
 }
 
 /* Enhance contrast for bars in dark mode */

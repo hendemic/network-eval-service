@@ -77,11 +77,11 @@ export default {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-xs);
-  color: var(--metric-value-color);
+  color: var(--color-metric-value);
 }
 
 .stat-label {
   font-size: var(--font-size-sm);
-  color: var(--text-primary);
+  color: var(--color-text-primary);
 }
 </style>

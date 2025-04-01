@@ -37,7 +37,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm);
 }
 
@@ -49,17 +49,17 @@
 
 .nav-item {
   text-decoration: none;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--border-radius-sm);
 }
 
 .nav-item:hover {
-  background-color: var(--bg-light);
+  background-color: var(--color-surface-base);
 }
 
 .nav-item.active {
-  color: var(--nav-active-color);
+  color: var(--color-nav-active);
   font-weight: var(--font-weight-bold);
 }
 
@@ -67,7 +67,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm);
   border-radius: var(--border-radius-sm);
   display: flex;
@@ -80,8 +80,8 @@
 }
 
 .refresh-btn:hover {
-  background-color: var(--bg-light);
-  color: var(--brand-primary);
+  background-color: var(--color-surface-base);
+  color: var(--color-brand-primary);
 }
 
 /* Mobile responsive styling */
@@ -131,7 +131,7 @@
     top: 100%;
     right: 0;
     width: 66%;
-    background: var(--bg-white);
+    background: var(--color-surface-card);
     padding: var(--space-md);
     box-shadow: var(--shadow-md);
     border-radius: var(--border-radius-md);
