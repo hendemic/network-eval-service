@@ -2,7 +2,7 @@
   <div v-if="updateAvailable" class="update-notification">
     <div class="update-content">
       <span role="img" aria-label="rocket" style="font-size: 1.2rem; margin-right: 0.2rem;">🚀</span>
-      <span>Update available! Use <code>nes-update</code> to update.</span>
+      <span>Update available! Use <code>nes-update</code> or update manually with docker.</span>
       <button @click="dismissUpdate" class="dismiss-btn" aria-label="Dismiss">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -105,11 +105,12 @@ export default {
   top: 0;
   left: 0;
   right: 0;
-  background-color: var(--brand-primary);
-  color: white;
+  background-color: var(--color-surface-card);
+  color: var(--color-text-primary);
   z-index: 1000;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
 }
 
 .update-content {
@@ -124,14 +125,15 @@ export default {
 .dismiss-btn {
   background: none;
   border: none;
-  color: white;
+  color: var(--color-text-primary);
   cursor: pointer;
   padding: 0.25rem;
   margin-left: auto;
 }
 
 code {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--color-surface-contrast);
+  color: var(--color-text-on-brand);
   padding: 0.15rem 0.3rem;
   border-radius: 3px;
 }
