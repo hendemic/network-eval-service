@@ -9,20 +9,20 @@
  * --breakpoint-lg: 1200px - Large devices (desktops)
  * 
  * Usage:
- * @media (max-width: var(--breakpoint-sm)) { ... }
- * @media (min-width: var(--breakpoint-md)) { ... }
+ * @media (max-width: 768px) { ... } (Small devices)
+ * @media (min-width: 992px) { ... } (Medium devices)
  * 
  * Common Responsive Patterns:
  * 1. Stack elements vertically on small screens
  *    .my-horizontal-container { flex-direction: row; }
- *    @media (max-width: var(--breakpoint-sm)) { .my-horizontal-container { flex-direction: column; } }
+ *    @media (max-width: 768px) { .my-horizontal-container { flex-direction: column; } }
  * 
  * 2. Hide elements on small screens
- *    @media (max-width: var(--breakpoint-sm)) { .desktop-only { display: none; } }
- *    @media (min-width: var(--breakpoint-sm)) { .mobile-only { display: none; } }
+ *    @media (max-width: 768px) { .desktop-only { display: none; } }
+ *    @media (min-width: 768px) { .mobile-only { display: none; } }
  * 
  * 3. Adjust grid columns based on screen size
- *    @media (max-width: var(--breakpoint-sm)) { .grid { grid-template-columns: 1fr; } }
+ *    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
  */
 
 /* Responsive navigation */
@@ -85,7 +85,7 @@
 }
 
 /* Mobile responsive styling */
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 768px) {
   /* Header styles already in layouts.css */
   
   .nav-container {
@@ -166,7 +166,7 @@
 }
 
 /* Very small screens */
-@media (max-width: var(--breakpoint-xs)) {
+@media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -192,7 +192,7 @@
   display: none;
 }
 
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 768px) {
   .desktop-only {
     display: none !important;
   }
@@ -222,7 +222,7 @@
   flex-direction: row;
 }
 
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 768px) {
   .flex-row-to-column {
     flex-direction: column;
   }

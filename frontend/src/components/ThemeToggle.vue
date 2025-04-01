@@ -68,7 +68,7 @@ export default {
   display: none;
 }
 
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 768px) {
   .theme-toggle {
     width: 100%;
     justify-content: flex-end;

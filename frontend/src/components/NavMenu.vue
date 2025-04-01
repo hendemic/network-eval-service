@@ -129,7 +129,7 @@ export default {
 }
 
 /* Mobile responsive styling */
-@media (max-width: var(--breakpoint-sm)) {
+@media (max-width: 768px) {
   .menu-toggle {
     display: flex;
     align-items: center;
