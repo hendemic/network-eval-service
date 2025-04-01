@@ -85,6 +85,12 @@
   --transition-quick: 0.2s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
+  
+  /* Responsive Breakpoints */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 992px;
+  --breakpoint-lg: 1200px;
 }
 
 /* Dark theme overrides - applied when .dark-theme class is added to body or html */

@@ -3,8 +3,13 @@
  * Contains base styles and utility classes
  */
 
-/* Import theme variables */
+/* Import theme variables and component styles */
 @import './theme.css';
+@import './layouts.css';
+@import './components.css';
+@import './buttons.css';
+@import './tables.css';
+@import './responsive.css';
 
 /* Box-sizing reset */
 *,

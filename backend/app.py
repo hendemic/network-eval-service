@@ -8,6 +8,34 @@ from backend.models import db, PingResult, configure_schema_if_postgres
 from backend.config import config
 from backend.pingTest import ping_test
 
+def get_rounded_time(hours=0):
+    """Get current time rounded to hour boundaries with optional offset.
+    
+    This helper function rounds the current UTC time to the nearest hour
+    boundary (rounding up if past the 30-minute mark) and then optionally
+    subtracts a specified number of hours.
+    
+    Args:
+        hours: Number of hours to subtract from the rounded time (default: 0)
+    
+    Returns:
+        datetime: Rounded UTC datetime, optionally offset by specified hours
+    """
+    # Always use UTC for consistency across timezones
+    now = datetime.utcnow()
+    
+    # Round to hour boundaries for consistent chart alignment
+    # If we're past 30 minutes, round up to the next hour
+    rounded_time = now.replace(minute=0, second=0, microsecond=0)
+    if now.minute >= 30:
+        rounded_time = rounded_time + timedelta(hours=1)
+    
+    # Apply hour offset if specified
+    if hours > 0:
+        rounded_time = rounded_time - timedelta(hours=hours)
+        
+    return rounded_time
+
 def create_app(config_name='default'):
     """Create and configure the Flask application.
     
@@ -48,16 +76,8 @@ def create_app(config_name='default'):
         hours = request.args.get('hours', default=24, type=int)
         limit = request.args.get('limit', default=1000, type=int)
         
-        # Calculate time filter with hour rounding for consistent chart boundaries
-        now = datetime.utcnow()  # Always use UTC for consistency across timezones
-        
-        # Round to hour boundaries for consistent chart alignment
-        # If we're past 30 minutes, round up to the next hour
-        rounded_now = now.replace(minute=0, second=0, microsecond=0)
-        if now.minute >= 30:
-            rounded_now = rounded_now + timedelta(hours=1)
-            
-        time_filter = rounded_now - timedelta(hours=hours)
+        # Use helper function to get rounded time with specified offset
+        time_filter = get_rounded_time(hours=hours)
         
         # Query database
         results = PingResult.query.filter(
@@ -91,13 +111,9 @@ def create_app(config_name='default'):
                 'message': 'No ping results available'
             }), 404
         
-        # Calculate 24-hour statistics using same rounding approach
-        now = datetime.utcnow()
-        rounded_now = now.replace(minute=0, second=0, microsecond=0)
-        if now.minute >= 30:
-            rounded_now = rounded_now + timedelta(hours=1)
-        
-        day_ago = rounded_now - timedelta(hours=24)
+        # Use helper function to get current rounded time and 24 hours ago
+        rounded_now = get_rounded_time()
+        day_ago = get_rounded_time(hours=24)
         
         # Get statistical values for the last 24 hours
         day_stats = db.session.query(

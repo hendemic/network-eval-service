@@ -35,7 +35,6 @@ def ping_test(target: str = "1.1.1.1", count: int = 100, interval: str = "0.1") 
 
     # Initialize data collection variables
     latencies = []  # Store all successful ping times
-    lost_packets = 0  # Count packets that timed out or failed
 
     # Run ping command and parse output line by line in real-time
     try:
@@ -47,10 +46,6 @@ def ping_test(target: str = "1.1.1.1", count: int = 100, interval: str = "0.1") 
             line = process.stdout.readline()
             if not line:  # End of output
                 break
-                
-            # Detect packet loss by looking for error messages in the output
-            if "timeout" in line.lower() or "unreachable" in line.lower():
-                lost_packets += 1
                 
             # Parse successful ping responses by extracting the time value
             # The regex looks for patterns like "time=23.4 ms"
@@ -67,11 +62,10 @@ def ping_test(target: str = "1.1.1.1", count: int = 100, interval: str = "0.1") 
     total_packets = count  # The total number of pings we sent
     received_packets = len(latencies)  # Count of successful pings
     
-    # Update lost_packets based on the actual difference
-    # (More accurate than counting "timeout" messages)
+    # Calculate lost packets and packet loss percentage (0-100%)
+    # This is the most reliable method to determine packet loss as it accounts
+    # for all packets that were sent but didn't return a successful response
     lost_packets = total_packets - received_packets
-    
-    # Calculate packet loss percentage (0-100%)
     packet_loss = (lost_packets / total_packets) * 100 if total_packets > 0 else 0
 
     # Only calculate latency statistics if we received any packets

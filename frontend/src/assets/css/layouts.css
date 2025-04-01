@@ -1,0 +1,45 @@
+/**
+ * Network Evaluation Service - Layout Styles
+ * Common layout structures and patterns
+ */
+
+/* Common page header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+}
+
+/* Mobile responsive header */
+@media (max-width: var(--breakpoint-sm)) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* View containers */
+.dashboard,
+.history {
+  width: 100%;
+}
+
+/* Card layouts - extends the base card styles */
+.card {
+  /* Base styles already in base.css */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Add additional card variants as needed */
+.card.full-width {
+  width: 100%;
+}
+
+.card.flex-row {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-md);
+}
