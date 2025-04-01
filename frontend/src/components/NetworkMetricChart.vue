@@ -73,7 +73,7 @@ export default {
       // Set dimensions with more bottom margin for X-axis labels
       const margin = { top: 20, right: 20, bottom: 40, left: 40 }
       const width = chartContainer.value.clientWidth - margin.left - margin.right
-      const height = 300 - margin.top - margin.bottom
+      const height = 200 - margin.top - margin.bottom
       
       // Create SVG
       const svg = d3.select(chartContainer.value)
@@ -156,10 +156,12 @@ export default {
         .attr('dx', '-0.3em')
         .attr('transform', 'rotate(-20)');
       
-      // Draw Y-axis
+      // Draw Y-axis (with labels on every other tick)
       svg.append('g')
         .attr('class', 'y-axis')
-        .call(d3.axisLeft(yScale))
+        .call(d3.axisLeft(yScale)
+          .tickFormat((d, i) => i % 2 === 0 ? d : '') // Only show label for every other tick
+        )
       
       // Add Y axis label
       svg.append('text')
@@ -305,7 +307,7 @@ export default {
 
 .chart {
   width: 100%;
-  height: 300px;
+  height: 200px;
 }
 
 :deep(.domain),
