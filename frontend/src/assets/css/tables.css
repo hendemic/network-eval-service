@@ -1,0 +1,57 @@
+/**
+ * Network Evaluation Service - Table Styles
+ * Styles for data tables and related controls
+ */
+
+/* Data table styling */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-md);
+}
+
+.data-table th, 
+.data-table td {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.data-table th {
+  font-weight: var(--font-weight-bold);
+  background-color: var(--color-bg-table-header);
+  color: var(--color-text-primary);
+}
+
+/* Dark mode uses the dark-specific table header background already set in variables */
+
+.data-table tr:hover {
+  background-color: var(--color-bg-table-hover);
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.page-info {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.page-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.page-indicator {
+  padding: 0 var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,90 @@
+/**
+ * Network Evaluation Service - Button Styles
+ * Shared button styles and variants
+ */
+
+/* Time filter buttons */
+.time-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.time-btn {
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-base);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-filter-inactive);
+}
+
+.time-btn.active {
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+.time-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Page size buttons */
+.page-size-btn {
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-base);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-filter-inactive);
+}
+
+.page-size-btn.active {
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+/* Pagination buttons */
+.pagination-btn {
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-base);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  color: var(--color-filter-inactive);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+  background-color: var(--color-bg-table-header);
+}
+
+/* Action buttons */
+.action-btn {
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.action-btn.secondary {
+  background-color: var(--color-brand-secondary);
+}
+
+.action-btn.danger {
+  background-color: var(--color-brand-danger);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,229 @@
+/**
+ * Network Evaluation Service - Responsive Styles
+ * Mobile and responsive design patterns
+ * 
+ * Breakpoint System:
+ * --breakpoint-xs: 480px  - Extra small devices (phones)
+ * --breakpoint-sm: 768px  - Small devices (tablets, large phones)
+ * --breakpoint-md: 992px  - Medium devices (small laptops)
+ * --breakpoint-lg: 1200px - Large devices (desktops)
+ * 
+ * Usage:
+ * @media (max-width: 768px) { ... } (Small devices)
+ * @media (min-width: 992px) { ... } (Medium devices)
+ * 
+ * Common Responsive Patterns:
+ * 1. Stack elements vertically on small screens
+ *    .my-horizontal-container { flex-direction: row; }
+ *    @media (max-width: 768px) { .my-horizontal-container { flex-direction: column; } }
+ * 
+ * 2. Hide elements on small screens
+ *    @media (max-width: 768px) { .desktop-only { display: none; } }
+ *    @media (min-width: 768px) { .mobile-only { display: none; } }
+ * 
+ * 3. Adjust grid columns based on screen size
+ *    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+ */
+
+/* Responsive navigation */
+.nav-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: var(--space-sm);
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--border-radius-sm);
+}
+
+.nav-item:hover {
+  background-color: var(--color-surface-base);
+}
+
+.nav-item.active {
+  color: var(--color-nav-active);
+  font-weight: var(--font-weight-bold);
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: var(--space-sm);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.refresh-text {
+  display: none;
+}
+
+.refresh-btn:hover {
+  background-color: var(--color-surface-base);
+  color: var(--color-brand-primary);
+}
+
+/* Mobile responsive styling */
+@media (max-width: 768px) {
+  /* Header styles already in layouts.css */
+  
+  .nav-container {
+    position: relative;
+  }
+  
+  .menu-toggle {
+    display: block;
+  }
+  
+  /* X icon for close state */
+  .menu-toggle svg line:nth-child(1) {
+    transform-origin: center;
+    transition: transform var(--transition-quick);
+  }
+  
+  .menu-toggle svg line:nth-child(2) {
+    transition: opacity var(--transition-quick);
+  }
+  
+  .menu-toggle svg line:nth-child(3) {
+    transform-origin: center;
+    transition: transform var(--transition-quick);
+  }
+  
+  /* Hamburger to X animation */
+  .menu-toggle.active svg line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  
+  .menu-toggle.active svg line:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .menu-toggle.active svg line:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+  
+  .nav-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 66%;
+    background: var(--color-surface-card);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius-md);
+    z-index: 10;
+    margin-top: var(--space-sm);
+  }
+  
+  .nav-menu-expanded {
+    display: flex;
+  }
+  
+  .refresh-text {
+    display: inline;
+  }
+  
+  .refresh-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  /* Responsive table handling */
+  .data-table {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  /* Stats grid on smaller screens */
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-md);
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-controls {
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: flex-start;
+  }
+  
+  .page-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Responsive utility classes */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block !important;
+  }
+  
+  /* Responsive text alignment */
+  .text-center-mobile {
+    text-align: center !important;
+  }
+  
+  /* Mobile spacing */
+  .mb-sm-mobile {
+    margin-bottom: var(--space-sm) !important;
+  }
+  
+  .mb-md-mobile {
+    margin-bottom: var(--space-md) !important;
+  }
+}
+
+/* Flex direction modifiers */
+.flex-row-to-column {
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 768px) {
+  .flex-row-to-column {
+    flex-direction: column;
+  }
+}

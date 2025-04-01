@@ -191,7 +191,7 @@ export default {
 /* Non-scoped styles for global access */
 .tooltip {
   background: rgba(0, 0, 0, 0.75);
-  color: var(--text-white);
+  color: var(--color-text-on-brand);
   padding: var(--space-sm);
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);

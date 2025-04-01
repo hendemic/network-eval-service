@@ -8,14 +8,54 @@ from backend.models import db, PingResult, configure_schema_if_postgres
 from backend.config import config
 from backend.pingTest import ping_test
 
+def get_rounded_time(hours=0):
+    """Get current time rounded to hour boundaries with optional offset.
+    
+    This helper function rounds the current UTC time to the nearest hour
+    boundary (rounding up if past the 30-minute mark) and then optionally
+    subtracts a specified number of hours.
+    
+    Args:
+        hours: Number of hours to subtract from the rounded time (default: 0)
+    
+    Returns:
+        datetime: Rounded UTC datetime, optionally offset by specified hours
+    """
+    # Always use UTC for consistency across timezones
+    now = datetime.utcnow()
+    
+    # Round to hour boundaries for consistent chart alignment
+    # If we're past 30 minutes, round up to the next hour
+    rounded_time = now.replace(minute=0, second=0, microsecond=0)
+    if now.minute >= 30:
+        rounded_time = rounded_time + timedelta(hours=1)
+    
+    # Apply hour offset if specified
+    if hours > 0:
+        rounded_time = rounded_time - timedelta(hours=hours)
+        
+    return rounded_time
+
 def create_app(config_name='default'):
+    """Create and configure the Flask application.
+    
+    This is the application factory pattern. It creates a new Flask instance,
+    loads the configuration, initializes extensions, and registers routes.
+    
+    Args:
+        config_name: Configuration profile to use ('default', 'development', 'production', 'testing')
+        
+    Returns:
+        Configured Flask application instance
+    """
+    # Initialize Flask app with static files from the Vue.js build directory
     app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
     app.config.from_object(config[config_name])
     
-    # Configure the schema if we're using PostgreSQL
+    # Configure PostgreSQL schema if using Postgres (not for SQLite in testing/development)
     configure_schema_if_postgres(app)
     
-    # Initialize extensions
+    # Initialize database, migrations, and cross-origin resource sharing
     db.init_app(app)
     Migrate(app, db)
     CORS(app)
@@ -23,19 +63,21 @@ def create_app(config_name='default'):
     # Register API routes
     @app.route('/api/ping-results', methods=['GET'])
     def get_ping_results():
-        # Get query parameters for filtering
+        """Get network ping test results from the database.
+        
+        Query parameters:
+            hours: Number of hours of history to retrieve (default: 24)
+            limit: Maximum number of results to return (default: 1000)
+            
+        Returns:
+            JSON array of ping test results within the specified time range
+        """
+        # Parse query parameters with defaults
         hours = request.args.get('hours', default=24, type=int)
         limit = request.args.get('limit', default=1000, type=int)
         
-        # Calculate time filter
-        now = datetime.utcnow()
-        
-        # Round to the nearest hour to get consistent charts starting on even hours
-        rounded_now = now.replace(minute=0, second=0, microsecond=0)
-        if now.minute >= 30:  # If we're past half an hour, round up to the next hour
-            rounded_now = rounded_now + timedelta(hours=1)
-            
-        time_filter = rounded_now - timedelta(hours=hours)
+        # Use helper function to get rounded time with specified offset
+        time_filter = get_rounded_time(hours=hours)
         
         # Query database
         results = PingResult.query.filter(
@@ -49,7 +91,18 @@ def create_app(config_name='default'):
     
     @app.route('/api/ping-stats', methods=['GET'])
     def get_ping_stats():
-        # Get latest ping result
+        """Get summary statistics for network performance.
+        
+        Returns:
+            JSON object containing:
+            - The most recent ping test result
+            - Statistical aggregates for the last 24 hours (avg/max/min metrics)
+            
+        Status codes:
+            200: Success
+            404: No ping results available in the database
+        """
+        # Get the most recent ping test result for current status
         latest = PingResult.query.order_by(PingResult.timestamp.desc()).first()
         
         if not latest:
@@ -58,13 +111,9 @@ def create_app(config_name='default'):
                 'message': 'No ping results available'
             }), 404
         
-        # Calculate 24-hour statistics using same rounding approach
-        now = datetime.utcnow()
-        rounded_now = now.replace(minute=0, second=0, microsecond=0)
-        if now.minute >= 30:
-            rounded_now = rounded_now + timedelta(hours=1)
-        
-        day_ago = rounded_now - timedelta(hours=24)
+        # Use helper function to get current rounded time and 24 hours ago
+        rounded_now = get_rounded_time()
+        day_ago = get_rounded_time(hours=24)
         
         # Get statistical values for the last 24 hours
         day_stats = db.session.query(
@@ -88,10 +137,15 @@ def create_app(config_name='default'):
             }
         })
     
-    # Serve the Vue app
+    # Serve the Vue.js frontend application
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def catch_all(path):
+        """Catch-all route to serve the single-page Vue.js application.
+        
+        This enables client-side routing by sending all unmatched routes
+        to the Vue.js application which handles routing internally.
+        """
         return app.send_static_file('index.html')
     
     return app

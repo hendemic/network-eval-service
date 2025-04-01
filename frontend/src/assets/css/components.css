@@ -1,0 +1,94 @@
+/**
+ * Network Evaluation Service - Component Styles
+ * Reusable component styles shared across views
+ */
+
+/* Status display components */
+.loading,
+.error,
+.waiting {
+  text-align: center;
+  padding: var(--space-xl);
+  background: var(--color-surface-card);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.error {
+  color: var(--color-brand-danger);
+}
+
+.waiting {
+  color: var(--color-text-primary);
+}
+
+.waiting-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-md);
+}
+
+.waiting-subtext {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+}
+
+/* Stats grid layout */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+}
+
+.stats-overview {
+  margin-bottom: var(--space-xl);
+}
+
+.last-updated {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+}
+
+/* Section headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+/* Chart components */
+.chart-card {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.chart-card h4 {
+  margin-top: 0;
+  margin-bottom: var(--space-md);
+  color: var(--color-text-secondary);
+}
+
+.performance-section {
+  margin-top: var(--space-xl);
+}
+
+/* Controls */
+.controls {
+  margin-bottom: var(--space-lg);
+}
+
+.page-size-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.control-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

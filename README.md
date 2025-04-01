@@ -14,15 +14,48 @@ https://github.com/user-attachments/assets/829a8f7a-474e-4344-8744-e8529229fbba
 - Results stored in PostgreSQL database and scalable for future feature development.
 - Docker-based deployment to local host, Raspi, or Proxmox LXC
 
-## Prerequisites
+## Installation
+
+### Quick Install with Docker
+
+If you already have Docker and Docker Compose installed, you can get up and running with just a few commands:
+
+```bash
+# Navigate to the directory you wish to install the program in
+cd /opt
+
+# Clone the repository
+git clone https://github.com/hendemic/network-eval-service.git
+cd network-eval-service
+
+# Build and start containers
+docker compose build
+docker compose up -d
+```
+
+The web interface will be available at `http://localhost:5000`
+
+Environment variables can be customized by creating a `.env` file in the project directory with any of these values:
+- `POSTGRES_USER`: Database username (default: netmon)
+- `POSTGRES_PASSWORD`: Database password (default: netmon)
+- `POSTGRES_DB`: Database name (default: network_tests)
+- `POSTGRES_SCHEMA`: Schema name (default: network_eval)
+- `WEB_PORT`: Web interface port (default: 5000)
+- `TEST_TARGET`: IP to ping (default: 1.1.1.1)
+- `TEST_COUNT`: Number of pings per test (default: 400)
+- `PING_INTERVAL`: Seconds between pings (default: 0.1)
+- `TEST_INTERVAL`: Seconds between tests (default: 60)
+
+### Installer Script
+
+For systems without Docker or for easier installation, an installer script is provided. You can still use this if you have Docker and Docker Compose, as the script will check for those dependencies and continue if you already have them.
+
+#### Prerequisites
 - Any debian based system
 - Internet access for downloading dependencies and container images
 
-The installer will automatically check for Docker and Docker Compose and install them if needed.
-
-## Installation
-### Unique Proxmox LXC Installation Considerations
-It is recommended that you use a Debian 12 LXC. Set up your new container, and then make sure required packages are installed.
+#### Proxmox LXC Installation Considerations
+It is recommended that you use a Debian 12 LXC if installing on Proxmox. Set up your new container, and then make sure required packages are installed.
 
 ```bash
 apt update && apt install git curl sudo
@@ -30,7 +63,7 @@ apt update && apt install git curl sudo
 
 > **Caution**: **The install.sh script is not a Proxmox Helper Script.** Do not run the install script on your host in Proxmox. If you are using Proxmox, this is meant to be run in an LXC container you create for NES or intend to run NES in alongside other Docker apps.
 
-### Install process for all systems
+#### Install Process
 Navigate to the directory you prefer to clone source to for install. If you're unsure, /usr/local/src is a common convention and will work for this install.
 ```bash
 cd /usr/local/src/
@@ -70,10 +103,11 @@ Configuration is done through environment variables in the `.env` file located i
 - `WEB_PORT` - The port to expose the web interface (default: 5000)
 - `TEST_TARGET` - IP address or hostname to ping (default: 1.1.1.1)
 - `TEST_COUNT` - Number of pings per test (default: 400)
-- `TEST_INTERVAL` - Interval between pings in seconds (default: 0.1)
+- `PING_INTERVAL` - Interval between individual pings in seconds (default: 0.1)
+- `TEST_INTERVAL` - Interval between tests in seconds (default: 60)
 
 ## Upgrading
-There is an update utility provided, which can be found in your program files (`/opt/network-evaluation-service/update.sh` by default). The install script set up a bash short cut (`nes-update`) for convenience.
+There is an update utility provided, which can be found in your program files (`/opt/network-evaluation-service/update.sh` by default). If you installed with the install script, it set up a bash short cut (`nes-update`) for convenience.
 
 For the easiest update use the following command (the current working directory is not relevant):
 ```bash

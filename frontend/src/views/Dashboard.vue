@@ -25,7 +25,7 @@
       <div class="card stats-overview">
         <h3>Current Network Status</h3>
         <p class="last-updated">
-          Last updated: {{ formatDate(stats.latest.timestamp) }}
+          Last updated: {{ formatDateToLocaleString(stats.latest.timestamp) }}
         </p>
 
         <div class="stats-grid">
@@ -161,6 +161,9 @@ import NavMenu from "../components/NavMenu.vue";
 import NetworkMetric from "../components/NetworkMetric.vue";
 import Tooltip from "../components/Tooltip.vue";
 import { useTooltip } from "../composables/useTooltip.js";
+import { useChartData } from "../composables/useChartData.js";
+import { useTimeRange } from "../composables/useTimeRange.js";
+import { formatDateToLocaleString } from "../utils/dateUtils.js";
 
 export default {
   name: "Dashboard",
@@ -173,30 +176,10 @@ export default {
   setup() {
     const store = useStore();
     const refreshInterval = ref(null);
-    const selectedHours = ref(3);
     
     // Initialize tooltip system
     const tooltipRef = ref(null);
     const { attachDisabledTooltip, register } = useTooltip();
-
-    const timeOptions = [
-      { label: "3 Hours", hours: 3 },
-      { label: "12 Hours", hours: 12 },
-      { label: "24 Hours", hours: 24 },
-      { label: "3 Days", hours: 72 },
-      { label: "7 Days", hours: 168 },
-    ];
-
-    // Function to initialize tooltips for time filter buttons
-    const initButtonTooltip = (element, hours) => {
-      if (!element) return;
-      
-      // Add tooltip to all buttons, but it will only show when they're disabled
-      attachDisabledTooltip(element, 'Not enough data available for this time range');
-      
-      // Return the button element for Vue's ref handling
-      return element;
-    };
     
     // Fetch data on component mount
     onMounted(() => {
@@ -235,20 +218,14 @@ export default {
       ]);
     };
 
-    const setTimeRange = (hours) => {
-      selectedHours.value = hours;
-      fetchData();
-    };
-
     const refreshData = () => {
       fetchData();
     };
     
-    // Check if there's enough data for a specific time range
-    const hasEnoughDataForTimeRange = (hours) => {
-      // Get the current data points directly from the getter
+    // Helper function to calculate the data span in hours
+    const calculateDataSpan = () => {
       const data = store.getters.latencyData;
-      if (!data || data.length === 0) return false;
+      if (!data || data.length < 2) return 0;
       
       // Sort data by timestamp to accurately measure time span
       const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
@@ -256,83 +233,70 @@ export default {
       // Calculate the time span of our current data in hours
       const oldestTimestamp = sortedData[0].timestamp;
       const newestTimestamp = sortedData[sortedData.length - 1].timestamp;
-      const spanHours = (newestTimestamp - oldestTimestamp) / (1000 * 60 * 60);
-      
-      // Find the current time option index
-      const currentOptionIndex = timeOptions.findIndex(option => option.hours === hours);
-      
-      // Enable the button if:
-      // 1. It's one of the first two time options (3h, 12h) - always enabled
-      // 2. OR we have enough data to justify this scale (at least more than the previous scale)
-      if (currentOptionIndex <= 1) {
-        // Always enable 3h and 12h options
-        return true;
-      } else if (currentOptionIndex > 1) {
-        // For larger time scales, check if we have more data than would justify the previous scale
-        const previousScale = timeOptions[currentOptionIndex - 1].hours;
-        return spanHours > previousScale;
-      }
-      
-      // Default fallback
-      return false;
+      return (newestTimestamp - oldestTimestamp) / (1000 * 60 * 60);
     };
-
-    // Format date for display
-    const formatDate = (dateString) => {
-      // Add 'Z' to indicate this is UTC time
-      const date = new Date(dateString + "Z");
-      return date.toLocaleString();
+    
+    // Initialize time range management
+    const timeRange = useTimeRange({
+      getDataSpan: calculateDataSpan,
+      defaultRange: 3
+    });
+    
+    // Function to initialize tooltips for time filter buttons
+    const initButtonTooltip = (element, hours) => {
+      if (!element) return;
+      
+      // Add tooltip to all buttons, but it will only show when they're disabled
+      attachDisabledTooltip(element, timeRange.getTimeRangeTooltip(hours));
+      
+      // Return the button element for Vue's ref handling
+      return element;
     };
-
-    // These are now handled by the NetworkMetric component
-
-    // Modified to use structured data format for latency
-    // This improves consistency with other metrics
-    const chartData = computed(() => {
-      const latencyData = store.getters.latencyData;
-      if (latencyData.length === 0) return [];
-      
-      // Use the data directly rather than separate arrays
-      return latencyData.map((item) => item.value);
+    
+    // Initialize chart data composables for each metric type
+    const latencyChartData = useChartData({
+      getData: () => store.getters.latencyData,
+      selectedHours: timeRange.selectedHours
     });
-
-    const chartLabels = computed(() => {
-      const latencyData = store.getters.latencyData;
-      if (latencyData.length === 0) return [];
-      
-      // Format labels based on time range
-      return latencyData.map((item) => {
-        const date = item.timestamp;
-        // Format differently depending on time range
-        if (selectedHours.value <= 12) {
-          // For shorter time periods, show hours:minutes with nicely formatted times
-          return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
-        } else if (selectedHours.value <= 72) {
-          // For 1-3 day view, show day and hour
-          return `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:00`;
-        } else {
-          // For 7-day view, show month/day and hour
-          return `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:00`;
-        }
-      });
+    
+    const jitterChartData = useChartData({
+      getData: () => store.getters.jitterData,
+      selectedHours: timeRange.selectedHours
     });
-
+    
+    const packetLossChartData = useChartData({
+      getData: () => store.getters.packetLossData,
+      selectedHours: timeRange.selectedHours
+    });
+    
+    // Create a wrapper for the time range availability check
+    const hasEnoughDataForTimeRange = (hours) => {
+      return timeRange.isTimeRangeAvailable(hours);
+    };
+    
     return {
       loading: computed(() => store.state.loading),
       error: computed(() => store.state.error),
       stats: computed(() => store.state.stats),
-      chartData,
-      chartLabels,
+      
+      // Chart data from our composables
       latencyData: computed(() => store.getters.latencyData),
       jitterData: computed(() => store.getters.jitterData),
       packetLossData: computed(() => store.getters.packetLossData),
-      timeOptions,
-      selectedHours,
-      setTimeRange,
+      
+      // Time range controls - provide both raw and processed options
+      timeOptions: timeRange.timeOptions,
+      selectedHours: timeRange.selectedHours,
+      setTimeRange: timeRange.setTimeRange,
       refreshData,
-      formatDate,
+      
+      // Formatting helpers
+      formatDateToLocaleString,
       hasEnoughDataForTimeRange,
+      
+      // Store reference
       store,
+      
       // Tooltip related
       tooltipRef,
       initButtonTooltip
@@ -342,123 +306,5 @@ export default {
 </script>
 
 <style scoped>
-.dashboard {
-  width: 100%;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-xl);
-}
-
-/* Mobile responsive styling */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-.loading,
-.error,
-.waiting {
-  text-align: center;
-  padding: var(--space-xl);
-  background: var(--bg-white);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-md);
-}
-
-.error {
-  color: var(--brand-danger);
-}
-
-.waiting {
-  color: var(--text-primary);
-}
-
-.waiting-icon {
-  font-size: 2rem;
-  margin-bottom: var(--space-md);
-}
-
-.waiting-subtext {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin-top: var(--space-sm);
-}
-
-.stats-overview {
-  margin-bottom: var(--space-xl);
-}
-
-.last-updated {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-md);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-lg);
-}
-
-/* Stat-item styles now in the NetworkMetric component */
-
-.performance-section {
-  margin-top: var(--space-xl);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-lg);
-  flex-wrap: wrap;
-  gap: var(--space-md);
-}
-
-.time-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-}
-
-.time-btn {
-  padding: var(--space-xs) var(--space-sm);
-  background-color: var(--bg-light);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  color: var(--filter-inactive-color);
-}
-
-.time-btn.active {
-  background-color: var(--brand-primary);
-  color: var(--text-white);
-}
-
-.time-btn.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.chart-card {
-  margin-top: var(--space-xl);
-  padding-top: var(--space-md);
-  border-top: var(--border-width-thin) solid var(--border-light);
-}
-
-.chart-card h4 {
-  margin-top: 0;
-  margin-bottom: var(--space-md);
-  color: var(--text-secondary);
-}
-
-/* Status color classes moved to NetworkMetric component */
+/* Component-specific styles only - shared styles are now in CSS modules */
 </style>

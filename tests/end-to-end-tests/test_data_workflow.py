@@ -77,7 +77,7 @@ class TestEndToEndWorkflow(unittest.TestCase):
                 test_results = ping_test(
                     target=self.app.config['TEST_TARGET'],
                     count=self.app.config['TEST_COUNT'],
-                    interval=self.app.config['TEST_INTERVAL']
+                    interval=self.app.config['PING_INTERVAL']
                 )
                 
                 # Create and save a new ping result
@@ -251,7 +251,7 @@ class TestEndToEndWorkflow(unittest.TestCase):
                 test_results = ping_test(
                     target=self.app.config['TEST_TARGET'],
                     count=self.app.config['TEST_COUNT'],
-                    interval=self.app.config['TEST_INTERVAL']
+                    interval=self.app.config['PING_INTERVAL']
                 )
                 
                 # Create and save a new ping result

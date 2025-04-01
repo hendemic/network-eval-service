@@ -87,8 +87,8 @@ services:
       - PGDATABASE=${POSTGRES_DB:-network_tests}
       - TEST_TARGET=${TEST_TARGET:-1.1.1.1}
       - TEST_COUNT=${TEST_COUNT:-400}
-      - TEST_INTERVAL=${TEST_INTERVAL:-0.1}
-      - TEST_INTERVAL_SECONDS=${TEST_INTERVAL_SECONDS:-60}
+      - PING_INTERVAL=${PING_INTERVAL:-0.1}
+      - TEST_INTERVAL=${TEST_INTERVAL:-60}
     restart: unless-stopped
 
 volumes:

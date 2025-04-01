@@ -1,5 +1,6 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
+import { formatMetricData } from '../utils/dateUtils'
 
 // API base URL
 const API_URL = process.env.VUE_APP_API_URL || '/api'
@@ -44,22 +45,13 @@ export default createStore({
   },
   getters: {
     latencyData(state) {
-      return state.pingResults.map(result => ({
-        timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
-        value: result.avg_latency
-      })).sort((a, b) => a.timestamp - b.timestamp)
+      return formatMetricData(state.pingResults, 'avg_latency');
     },
     jitterData(state) {
-      return state.pingResults.map(result => ({
-        timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
-        value: result.jitter
-      })).sort((a, b) => a.timestamp - b.timestamp)
+      return formatMetricData(state.pingResults, 'jitter');
     },
     packetLossData(state) {
-      return state.pingResults.map(result => ({
-        timestamp: new Date(result.timestamp + 'Z'), // Add Z to indicate UTC
-        value: result.packet_loss
-      })).sort((a, b) => a.timestamp - b.timestamp)
+      return formatMetricData(state.pingResults, 'packet_loss');
     },
     currentTheme(state) {
       return state.theme

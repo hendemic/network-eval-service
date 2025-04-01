@@ -66,7 +66,8 @@ class TestConfigModule(unittest.TestCase):
         # Test settings
         self.assertEqual(Config.TEST_TARGET, '1.1.1.1')
         self.assertEqual(Config.TEST_COUNT, 100)
-        self.assertEqual(Config.TEST_INTERVAL, '0.1')
+        self.assertEqual(Config.PING_INTERVAL, '0.1')
+        self.assertEqual(Config.TEST_INTERVAL, '60')
     
     @mock.patch.dict(os.environ, {
         'POSTGRES_USER': 'test_user',
@@ -79,7 +80,8 @@ class TestConfigModule(unittest.TestCase):
         'SECRET_KEY': 'test_key',
         'TEST_TARGET': '8.8.8.8',
         'TEST_COUNT': '200',
-        'TEST_INTERVAL': '0.5'
+        'PING_INTERVAL': '0.5',
+        'TEST_INTERVAL': '120'
     })
     def test_environment_variable_override(self):
         """Test that environment variables override default values."""
@@ -106,7 +108,8 @@ class TestConfigModule(unittest.TestCase):
         # Test settings
         self.assertEqual(Config.TEST_TARGET, '8.8.8.8')
         self.assertEqual(Config.TEST_COUNT, 200)
-        self.assertEqual(Config.TEST_INTERVAL, '0.5')
+        self.assertEqual(Config.PING_INTERVAL, '0.5')
+        self.assertEqual(Config.TEST_INTERVAL, '120')
     
     def test_debug_flag_parsing(self):
         """Test that the DEBUG flag is correctly parsed from string to boolean."""

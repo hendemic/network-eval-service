@@ -53,14 +53,14 @@ export default {
       // Otherwise use CSS variables based on metric
       const metricLower = props.metric.toLowerCase();
       if (metricLower.includes('latency')) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--chart-latency').trim();
+        return getComputedStyle(document.documentElement).getPropertyValue('--color-chart-latency').trim();
       } else if (metricLower.includes('jitter')) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--chart-jitter').trim();
+        return getComputedStyle(document.documentElement).getPropertyValue('--color-chart-jitter').trim();
       } else if (metricLower.includes('packet') || metricLower.includes('loss')) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--chart-packet-loss').trim();
+        return getComputedStyle(document.documentElement).getPropertyValue('--color-chart-packet-loss').trim();
       }
       // Default color
-      return getComputedStyle(document.documentElement).getPropertyValue('--brand-secondary').trim();
+      return getComputedStyle(document.documentElement).getPropertyValue('--color-brand-secondary').trim();
     };
     
     const drawChart = () => {
@@ -73,7 +73,7 @@ export default {
       // Set dimensions with more bottom margin for X-axis labels
       const margin = { top: 20, right: 20, bottom: 40, left: 40 }
       const width = chartContainer.value.clientWidth - margin.left - margin.right
-      const height = 300 - margin.top - margin.bottom
+      const height = 200 - margin.top - margin.bottom
       
       // Create SVG
       const svg = d3.select(chartContainer.value)
@@ -112,15 +112,19 @@ export default {
       // Configure X-axis ticks based on selected time range
       let xAxisTicks;
       
-      // Set appropriate tick intervals based on selected hours
+      // Set appropriate tick intervals based on the time range selected by the user
+      // This ensures the x-axis has a readable number of markers regardless of range
       if (props.selectedHours <= 3) {
-        // Every 15 minutes for 3-hour view
+        // For 3-hour view: Show tick marks every 15 minutes
+        // This provides enough detail for short-term monitoring
         xAxisTicks = d3.timeMinute.every(15);
       } else if (props.selectedHours <= 24) {
-        // Every hour for 12-hour and 24-hour views
+        // For 12-hour and 24-hour views: Show tick marks every hour
+        // This gives a good balance of detail without overcrowding
         xAxisTicks = d3.timeHour.every(1);
       } else {
-        // Every day for 3-day and 7-day views
+        // For 3-day and 7-day views: Show tick marks every day
+        // This provides appropriate context for long-term trends
         xAxisTicks = d3.timeDay.every(1);
       }
       
@@ -152,10 +156,12 @@ export default {
         .attr('dx', '-0.3em')
         .attr('transform', 'rotate(-20)');
       
-      // Draw Y-axis
+      // Draw Y-axis (with labels on every other tick)
       svg.append('g')
         .attr('class', 'y-axis')
-        .call(d3.axisLeft(yScale))
+        .call(d3.axisLeft(yScale)
+          .tickFormat((d, i) => i % 2 === 0 ? d : '') // Only show label for every other tick
+        )
       
       // Add Y axis label
       svg.append('text')
@@ -218,7 +224,7 @@ export default {
           // Highlight the bar
           d3.select(this)
             .attr('opacity', 1)
-            .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--chart-highlight-stroke'))
+            .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--color-chart-highlight'))
             .attr('stroke-width', 1)
           
           // Make sure we have a valid timestamp
@@ -301,27 +307,27 @@ export default {
 
 .chart {
   width: 100%;
-  height: 300px;
+  height: 200px;
 }
 
 :deep(.domain),
 :deep(.tick line) {
-  stroke: var(--border-light);
+  stroke: var(--color-border-subtle);
 }
 
 :deep(.tick text) {
   font-size: var(--font-size-xs);
-  fill: var(--text-secondary);
+  fill: var(--color-text-secondary);
 }
 
 :deep(.axis-label) {
-  fill: var(--text-secondary);
+  fill: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
 :deep(.x-axis path),
 :deep(.y-axis path) {
-  stroke: var(--border-light);
+  stroke: var(--color-border-subtle);
 }
 
 /* Enhance contrast for bars in dark mode */

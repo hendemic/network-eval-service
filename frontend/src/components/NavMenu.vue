@@ -76,7 +76,7 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm);
   margin-right: var(--space-sm);
   width: 40px;
@@ -91,18 +91,18 @@ export default {
 
 .nav-item {
   text-decoration: none;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--border-radius-sm);
   /* No transition */
 }
 
 .nav-item:hover {
-  background-color: var(--bg-light);
+  background-color: var(--color-surface-base);
 }
 
 .nav-item.active {
-  color: var(--nav-active-color);
+  color: var(--color-nav-active);
   font-weight: var(--font-weight-bold);
 }
 
@@ -110,7 +110,7 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-sm);
   border-radius: var(--border-radius-sm);
   display: flex;
@@ -124,8 +124,8 @@ export default {
 }
 
 .refresh-btn:hover {
-  background-color: var(--bg-light);
-  color: var(--brand-primary);
+  background-color: var(--color-surface-base);
+  color: var(--color-brand-primary);
 }
 
 /* Mobile responsive styling */
@@ -148,7 +148,7 @@ export default {
     position: absolute;
     width: 100%;
     height: 3px;
-    background-color: var(--text-secondary);
+    background-color: var(--color-text-secondary);
     border-radius: 3px;
     /* No transition */
   }
@@ -188,7 +188,7 @@ export default {
     right: 0;
     width: 66vw; /* Use viewport width instead of percentage of parent */
     max-width: 300px;
-    background: var(--bg-white);
+    background: var(--color-surface-card);
     padding: var(--space-md);
     box-shadow: var(--shadow-md);
     border-radius: var(--border-radius-md);
@@ -214,7 +214,7 @@ export default {
   }
   
   .nav-item:hover {
-    background-color: var(--bg-light);
+    background-color: var(--color-surface-base);
   }
   
   .refresh-text {
