@@ -48,13 +48,11 @@ Environment variables can be customized by creating a `.env` file in the project
 
 ### Installer Script
 
-For systems without Docker or for easier installation, an installer script is provided. You can still use this if you have docker and docker compose as it will check for those dependencies and continue if you already have them.
+For systems without Docker or for easier installation, an installer script is provided. You can still use this if you have Docker and Docker Compose, as the script will check for those dependencies and continue if you already have them.
 
 #### Prerequisites
 - Any debian based system
 - Internet access for downloading dependencies and container images
-
-The installer will automatically check for Docker and Docker Compose and install them if needed.
 
 #### Proxmox LXC Installation Considerations
 It is recommended that you use a Debian 12 LXC. Set up your new container, and then make sure required packages are installed.
