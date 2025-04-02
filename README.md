@@ -214,5 +214,3 @@ The application runs in three Docker containers:
 
 ## License
 [MIT License](LICENSE)
-
-Reach out with any feedback or thoughts at hello@michaelrhenderson.com
