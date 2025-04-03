@@ -9,32 +9,28 @@ from backend.config import config
 from backend.pingTest import ping_test
 
 def get_rounded_time(hours=0):
-    """Get current time rounded to hour boundaries with optional offset.
+    """Get current time with optional hour offset.
     
-    This helper function rounds the current UTC time to the nearest hour
-    boundary (rounding up if past the 30-minute mark) and then optionally
-    subtracts a specified number of hours.
+    This helper function takes the current UTC time and subtracts the specified
+    number of hours to create a time window for data queries.
     
     Args:
-        hours: Number of hours to subtract from the rounded time (default: 0)
+        hours: Number of hours to subtract from the current time (default: 0)
     
     Returns:
-        datetime: Rounded UTC datetime, optionally offset by specified hours
+        datetime: UTC datetime, offset by specified hours
     """
     # Always use UTC for consistency across timezones
     now = datetime.utcnow()
     
-    # Round to hour boundaries for consistent chart alignment
-    # If we're past 30 minutes, round up to the next hour
-    rounded_time = now.replace(minute=0, second=0, microsecond=0)
-    if now.minute >= 30:
-        rounded_time = rounded_time + timedelta(hours=1)
-    
-    # Apply hour offset if specified
+    # Apply hour offset directly without rounding
+    # This ensures we get the exact time window requested
     if hours > 0:
-        rounded_time = rounded_time - timedelta(hours=hours)
+        time_filter = now - timedelta(hours=hours)
+    else:
+        time_filter = now
         
-    return rounded_time
+    return time_filter
 
 def create_app(config_name='default'):
     """Create and configure the Flask application.

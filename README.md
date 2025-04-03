@@ -24,8 +24,8 @@ If you already have Docker and Docker Compose installed, you can get up and runn
 # Navigate to the directory you wish to install the program in
 cd /opt
 
-# Clone the repository
-git clone https://github.com/hendemic/network-eval-service.git
+# Clone the repository (production branch for stable release)
+git clone -b production https://github.com/hendemic/network-eval-service.git
 cd network-eval-service
 
 # Build and start containers
@@ -71,8 +71,8 @@ cd /usr/local/src/
 
 Clone the repository, and run the install script
 ```bash
-# Clone the repository
-sudo git clone https://github.com/hendemic/network-eval-service.git
+# Clone the repository (production branch for stable release)
+sudo git clone -b production https://github.com/hendemic/network-eval-service.git
 cd network-eval-service
 
 # Make the install script executable
