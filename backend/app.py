@@ -6,7 +6,7 @@ import os
 
 from backend.models import db, PingResult, configure_schema_if_postgres
 from backend.config import config
-from backend.pingTest import ping_test
+# ping_test import removed as it's unused
 
 def get_rounded_time(hours=0):
     """Get current time with optional hour offset.
@@ -70,17 +70,19 @@ def create_app(config_name='default'):
         """
         # Parse query parameters with defaults
         hours = request.args.get('hours', default=24, type=int)
+        # limit parameter kept for API compatibility but not used in query
         limit = request.args.get('limit', default=1000, type=int)
         
         # Use helper function to get rounded time with specified offset
         time_filter = get_rounded_time(hours=hours)
         
-        # Query database
+        # Query database - get all results in chronological order
+        # Remove limit to ensure we get the full time range requested
         results = PingResult.query.filter(
             PingResult.timestamp >= time_filter
         ).order_by(
-            PingResult.timestamp.desc()
-        ).limit(limit).all()
+            PingResult.timestamp.asc()
+        ).all()
         
         # Return as JSON
         return jsonify([result.to_dict() for result in results])
@@ -107,8 +109,7 @@ def create_app(config_name='default'):
                 'message': 'No ping results available'
             }), 404
         
-        # Use helper function to get current rounded time and 24 hours ago
-        rounded_now = get_rounded_time()
+        # Use helper function to get 24 hours ago
         day_ago = get_rounded_time(hours=24)
         
         # Get statistical values for the last 24 hours
@@ -124,12 +125,12 @@ def create_app(config_name='default'):
         return jsonify({
             'latest': latest.to_dict(),
             'day_stats': {
-                'avg_packet_loss': day_stats.avg_packet_loss if day_stats.avg_packet_loss else 0,
-                'max_packet_loss': day_stats.max_packet_loss if day_stats.max_packet_loss else 0,
-                'avg_latency': day_stats.avg_latency if day_stats.avg_latency else 0,
-                'avg_jitter': day_stats.avg_jitter if day_stats.avg_jitter else 0,
-                'min_latency': day_stats.min_latency if day_stats.min_latency else 0,
-                'max_latency': day_stats.max_latency if day_stats.max_latency else 0
+                'avg_packet_loss': day_stats.avg_packet_loss if day_stats and day_stats.avg_packet_loss else 0,
+                'max_packet_loss': day_stats.max_packet_loss if day_stats and day_stats.max_packet_loss else 0,
+                'avg_latency': day_stats.avg_latency if day_stats and day_stats.avg_latency else 0,
+                'avg_jitter': day_stats.avg_jitter if day_stats and day_stats.avg_jitter else 0,
+                'min_latency': day_stats.min_latency if day_stats and day_stats.min_latency else 0,
+                'max_latency': day_stats.max_latency if day_stats and day_stats.max_latency else 0
             }
         })
     

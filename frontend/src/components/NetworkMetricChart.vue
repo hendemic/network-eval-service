@@ -89,10 +89,9 @@ export default {
         value: d.value
       })).sort((a, b) => a.timestamp - b.timestamp)
       
-      // Calculate time range for the chart
+      // Calculate time range for the chart with millisecond precision
       const latestTimestamp = d3.max(processedData, d => d.timestamp)
-      const startTime = new Date(latestTimestamp)
-      startTime.setHours(startTime.getHours() - props.selectedHours)
+      const startTime = new Date(latestTimestamp.getTime() - (props.selectedHours * 60 * 60 * 1000))
       
       // Create time scale
       const xScale = d3.scaleTime()
@@ -182,7 +181,9 @@ export default {
       console.log(`${props.metric} chart data:`, {
         total: processedData.length,
         visible: visibleData.length,
-        timeRange: `${startTime.toLocaleTimeString()} - ${latestTimestamp.toLocaleTimeString()}`
+        timeRange: `${startTime.toLocaleTimeString()} - ${new Date(latestTimestamp).toLocaleTimeString()}`,
+        selectedHours: props.selectedHours,
+        actualTimeSpan: ((latestTimestamp - startTime) / (1000 * 60 * 60)).toFixed(2) + 'h'
       })
       
       // Set maximum bar width based on time range

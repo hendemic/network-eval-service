@@ -37,12 +37,29 @@ export const formatDateToLocaleString = (isoString) => {
  * @returns {Array} Array of objects with timestamp and value properties, sorted by time
  */
 export const formatMetricData = (results, metricKey) => {
-  if (!results || !results.length) return [];
+  if (!results || !results.length) {
+    console.log('formatMetricData: No results provided');
+    return [];
+  }
   
-  return results
+  console.log(`formatMetricData: Processing ${results.length} results for ${metricKey}`);
+  
+  const formattedData = results
     .map(result => ({
       timestamp: parseUtcTimestamp(result.timestamp),
       value: result[metricKey]
     }))
     .sort((a, b) => a.timestamp - b.timestamp);
+    
+  if (formattedData.length > 0) {
+    console.log(`formatMetricData: Formatted data span:`, {
+      metric: metricKey,
+      points: formattedData.length,
+      oldest: formattedData[0].timestamp.toLocaleString(),
+      newest: formattedData[formattedData.length - 1].timestamp.toLocaleString(),
+      spanHours: ((formattedData[formattedData.length - 1].timestamp - formattedData[0].timestamp) / (1000 * 60 * 60)).toFixed(2)
+    });
+  }
+  
+  return formattedData;
 };

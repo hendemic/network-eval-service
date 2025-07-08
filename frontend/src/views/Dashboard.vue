@@ -209,7 +209,7 @@ export default {
       // Request enough data for all time filters
       const requestConfig = {
         hours: 168, // 7 days to cover all time filters
-        limit: 1000
+        limit: 20000  // Much higher to ensure all data is fetched
       };
       
       await Promise.all([
@@ -222,9 +222,14 @@ export default {
       fetchData();
     };
     
-    // Helper function to calculate the data span in hours
-    const calculateDataSpan = () => {
+    // Reactive computed property to calculate the data span in hours
+    const dataSpan = computed(() => {
       const data = store.getters.latencyData;
+      console.log('dataSpan computed called:', {
+        dataLength: data?.length,
+        hasData: !!(data && data.length >= 2)
+      });
+      
       if (!data || data.length < 2) return 0;
       
       // Sort data by timestamp to accurately measure time span
@@ -233,12 +238,52 @@ export default {
       // Calculate the time span of our current data in hours
       const oldestTimestamp = sortedData[0].timestamp;
       const newestTimestamp = sortedData[sortedData.length - 1].timestamp;
-      return (newestTimestamp - oldestTimestamp) / (1000 * 60 * 60);
+      const spanHours = (newestTimestamp - oldestTimestamp) / (1000 * 60 * 60);
+      
+      console.log('Data span calculation:', {
+        dataPoints: data.length,
+        oldestTime: new Date(oldestTimestamp).toLocaleString(),
+        newestTime: new Date(newestTimestamp).toLocaleString(),
+        spanHours: spanHours.toFixed(2)
+      });
+      
+      return spanHours;
+    });
+    
+    // Data validation function to check for continuity issues
+    const validateDataContinuity = (data) => {
+      if (!data || data.length < 2) return false;
+      
+      // Check for large gaps in data
+      const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
+      let gapCount = 0;
+      for (let i = 1; i < sortedData.length; i++) {
+        const gap = sortedData[i].timestamp - sortedData[i-1].timestamp;
+        const gapHours = gap / (1000 * 60 * 60);
+        if (gapHours > 1) {  // More than 1 hour gap
+          gapCount++;
+          console.warn(`Data gap detected: ${gapHours.toFixed(2)} hours between ${new Date(sortedData[i-1].timestamp).toLocaleString()} and ${new Date(sortedData[i].timestamp).toLocaleString()}`);
+        }
+      }
+      
+      if (gapCount > 0) {
+        console.warn(`Found ${gapCount} data gaps larger than 1 hour`);
+      }
+      
+      return gapCount === 0;
     };
     
     // Initialize time range management
     const timeRange = useTimeRange({
-      getDataSpan: calculateDataSpan,
+      getDataSpan: () => {
+        const span = dataSpan.value;
+        // Validate data continuity when calculating span
+        if (span > 0) {
+          const data = store.getters.latencyData;
+          validateDataContinuity(data);
+        }
+        return span;
+      },
       defaultRange: 3
     });
     
@@ -269,8 +314,9 @@ export default {
       selectedHours: timeRange.selectedHours
     });
     
-    // Create a wrapper for the time range availability check
+    // Create a wrapper for the time range availability check that's reactive to data changes
     const hasEnoughDataForTimeRange = (hours) => {
+      // This will be reactive because it depends on dataSpan which is computed
       return timeRange.isTimeRangeAvailable(hours);
     };
     

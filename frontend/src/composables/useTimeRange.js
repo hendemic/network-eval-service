@@ -22,9 +22,9 @@ export function useTimeRange(options) {
   const timeOptions = [
     { label: "3 Hours", hours: 3, minDataSpan: 0 }, // Always available
     { label: "12 Hours", hours: 12, minDataSpan: 0 }, // Always available
-    { label: "24 Hours", hours: 24, minDataSpan: 12 }, // Need more than 12h of data
-    { label: "3 Days", hours: 72, minDataSpan: 24 }, // Need more than 24h of data
-    { label: "7 Days", hours: 168, minDataSpan: 72 }, // Need more than 72h of data
+    { label: "24 Hours", hours: 24, minDataSpan: 11 }, // Need at least 11h of data
+    { label: "3 Days", hours: 72, minDataSpan: 23 }, // Need at least 23h of data
+    { label: "7 Days", hours: 168, minDataSpan: 71 }, // Need at least 71h of data
   ];
   
   // Currently selected time range in hours
@@ -40,14 +40,27 @@ export function useTimeRange(options) {
     // Get current data time span
     const dataSpanHours = getDataSpan();
     
-    if (!dataSpanHours) return false;
+    if (!dataSpanHours) {
+      console.log(`Time range ${hours}h not available: no data span`);
+      return false;
+    }
     
     // Find the option that matches these hours
     const option = timeOptions.find(opt => opt.hours === hours);
-    if (!option) return false;
+    if (!option) {
+      console.log(`Time range ${hours}h not available: option not found`);
+      return false;
+    }
     
     // Check if we have enough data for this option
-    return dataSpanHours > option.minDataSpan;
+    const available = dataSpanHours >= option.minDataSpan;
+    console.log(`Time range ${hours}h availability:`, {
+      dataSpanHours: dataSpanHours.toFixed(2),
+      minRequired: option.minDataSpan,
+      available
+    });
+    
+    return available;
   };
   
   /**
@@ -78,11 +91,21 @@ export function useTimeRange(options) {
    * Get time range options with availability status
    */
   const availableTimeOptions = computed(() => {
-    return timeOptions.map(option => ({
+    console.log('Computing available time options...');
+    const options = timeOptions.map(option => ({
       ...option,
       available: isTimeRangeAvailable(option.hours),
       active: selectedHours.value === option.hours
     }));
+    
+    console.log('Available time options:', options.map(opt => ({
+      label: opt.label,
+      hours: opt.hours,
+      available: opt.available,
+      active: opt.active
+    })));
+    
+    return options;
   });
   
   return {
